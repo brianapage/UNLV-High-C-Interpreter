@@ -10,11 +10,12 @@ namespace HighCInterpreterCore
     {
         private List<HighCToken> tokenList;
         private int currentToken;
-        private  String debugLog;
+        private String debugLog;
         private String consoleText;
         private Boolean fullDebug = false;
         private List<String> debugList = new List<String>();
         private Boolean stopProgram = false;
+        private Boolean errorFound = false;
 
         public HighCParser(List<HighCToken> newTokens)
         {
@@ -22,7 +23,15 @@ namespace HighCInterpreterCore
             currentToken = 0;
         }
 
-        public Boolean parse() { return HC_program(); }
+        public Boolean parse()
+        {
+            if(HC_program() &&
+                errorFound==false)
+            {
+                return true;
+            }
+            return false;
+        }
 
         public String getDebugLog()
         {
@@ -100,6 +109,12 @@ namespace HighCInterpreterCore
             }
 
             return false;
+        }
+
+        private void error()
+        {
+            stopProgram = true;
+            errorFound = true;
         }
 
         private Boolean _______________Productions_______________() { return false; }
@@ -859,6 +874,8 @@ namespace HighCInterpreterCore
                         addDebugInfo("(L" + tokenList[currentToken].Line + ", C" + tokenList[currentToken].Column + ") " + HighCTokenLibrary.IF + ": A boolean value was expected inside the paranthesis." + Environment.NewLine);
                     }
                 }
+
+                error();
             }
 
             return false;
@@ -953,6 +970,10 @@ namespace HighCInterpreterCore
                         {
                             Console.WriteLine(currentToken + " <if> -> if ( <boolean expression> ) <block> <else_if>* else <block> -> if branch");
                             return true;
+                        }
+                        else
+                        {
+                            return false;
                         }
                     }
                     else
@@ -1429,15 +1450,7 @@ namespace HighCInterpreterCore
             stringBuffer = "";
             Double term1 = 0.0;
             Boolean boolTerm = false;
-            
-            if (HC_arithmetic_expression(ref term1) == true)
-            {
-                stringBuffer = term1.ToString();
-                Console.WriteLine(currentToken + " <scalar expression> -> <arithmetic expression>" + " -> " + stringBuffer);
-                return true;
-            }
 
-            currentToken = storeToken;
             if (HC_boolean_expression(ref boolTerm) == true)
             {
                 stringBuffer = boolTerm.ToString();
@@ -1445,6 +1458,13 @@ namespace HighCInterpreterCore
                 return true;
             }
 
+            currentToken = storeToken;
+            if (HC_arithmetic_expression(ref term1) == true)
+            {
+                stringBuffer = term1.ToString();
+                Console.WriteLine(currentToken + " <scalar expression> -> <arithmetic expression>" + " -> " + stringBuffer);
+                return true;
+            }
             currentToken = storeToken;
             if (HC_string_expression(out stringBuffer) == true)
             {
