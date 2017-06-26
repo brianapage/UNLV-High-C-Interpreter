@@ -42,13 +42,13 @@ namespace HighCInterpreterCore
         public const String DOLLAR_SIGN = "$";
         //Keywords
         public const String ABSTRACT = "abstract";
-        public const String ADD_TO = "addto";
+        public const String ADD_TO = "Addto";
         public const String APPEND = "append";
         public const String ARRAY = "Array";
         public const String CALL = "call";
-        public const String CHARACTER = "CHAR";
         public const String CHOICE = "choice";
         public const String CLASS = "class";
+        public const String CREATE = "create";
         public const String CONSTANT = "constant";
         public const String DISCRETE = "discrete";
         public const String E = "e";
@@ -98,8 +98,9 @@ namespace HighCInterpreterCore
         public const String TRUE = "true";
         //Data Types
         public const String BOOLEAN = "BOOL";
-        public const String FLOAT = "float";
+        public const String FLOAT = "FLOAT";
         public const String INTEGER = "INT";
+        public const String CHARACTER = "CHAR";
         public const String STRING = "STRING";
         //Other
         public const String IDENTIFIER = "Identifier";
@@ -107,7 +108,79 @@ namespace HighCInterpreterCore
         public const String STRING_LITERAL = "String Literal";
         public const String INTEGER_LITERAL = "Integer Literal";
         public const String FLOAT_LITERAL = "Float Literal";
+        public const String LIST = "List";
+
         //public const String NUMERIC_LITERAL = "Numeric Literal";
         public const String EXPONENT = "Exponent";
+
+        public static List<String> getKeywords()
+        {
+            List<String> keywords = new List<String>();
+
+            //Keywords
+            keywords.Add( ABSTRACT );
+            keywords.Add( ADD_TO );
+            keywords.Add( APPEND );
+            keywords.Add( ARRAY );
+            keywords.Add( CALL );
+            keywords.Add( CHARACTER );
+            keywords.Add( CHOICE );
+            keywords.Add( CLASS );
+            keywords.Add( CONSTANT );
+            keywords.Add( CREATE );
+            keywords.Add( DISCRETE );
+            keywords.Add( E );
+            keywords.Add( UPPERCASE_E );
+            keywords.Add( ELSE );
+            keywords.Add( ELSE_IF );
+            keywords.Add( END_OF_LINE );
+            keywords.Add( ENUMERATION );
+            keywords.Add( FINAL );
+            keywords.Add( FOR );
+            keywords.Add( FOREACH_ARRAY );
+            keywords.Add( FOREACH_LIST );
+            keywords.Add( FUNCTION );
+            keywords.Add( GLOBAL );
+            keywords.Add( IF );
+            keywords.Add( IN );
+            keywords.Add( IN_OUT );
+            keywords.Add( IN_REVERSE );
+            keywords.Add( INSERT );
+            keywords.Add( INSTANCE_OF );
+            keywords.Add( LAST );
+            keywords.Add( LENGTH );
+            keywords.Add( LOOP );
+            keywords.Add( MAIN );
+            keywords.Add( MATCH );
+            keywords.Add( METHOD );
+            keywords.Add( MULTIPLE );
+            keywords.Add( NEXT );
+            keywords.Add( ON );
+            keywords.Add( OTHER );
+            keywords.Add( OUT );
+            keywords.Add( PREVIOUS );
+            keywords.Add( PRIVATE );
+            keywords.Add( PUBLIC );
+            keywords.Add( PURE );
+            keywords.Add( RECURSIVE );
+            keywords.Add( REMOVE );
+            keywords.Add( RETURN );
+            keywords.Add( RETYPE );
+            keywords.Add( SCALAR );
+            keywords.Add( SET );
+            keywords.Add( STOP );
+            keywords.Add( UNTIL );
+            keywords.Add( VOID );
+            //Primitive Constants
+            keywords.Add( FALSE );
+            keywords.Add( TRUE );
+            //Data Types
+            keywords.Add( BOOLEAN );
+            keywords.Add( FLOAT );
+            keywords.Add( INTEGER );
+            keywords.Add( STRING );
+            
+            return keywords;
+        }
     }
 }

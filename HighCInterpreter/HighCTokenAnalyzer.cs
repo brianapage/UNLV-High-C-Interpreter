@@ -95,6 +95,8 @@ namespace HighCInterpreterCore
                         token.Type = HighCTokenLibrary.CLASS; break;
                     case HighCTokenLibrary.CONSTANT:
                         token.Type = HighCTokenLibrary.CONSTANT; break;
+                    case HighCTokenLibrary.CREATE:
+                        token.Type = HighCTokenLibrary.CREATE; break;
                     case HighCTokenLibrary.DISCRETE:
                         token.Type = HighCTokenLibrary.DISCRETE; break;
                     case HighCTokenLibrary.CARET:
