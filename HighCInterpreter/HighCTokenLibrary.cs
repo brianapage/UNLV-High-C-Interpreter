@@ -49,7 +49,7 @@ namespace HighCInterpreterCore
         public const String CHOICE = "choice";
         public const String CLASS = "class";
         public const String CREATE = "create";
-        public const String CONSTANT = "constant";
+        public const String CONSTANT = "const";
         public const String DISCRETE = "discrete";
         public const String E = "e";
         public const String UPPERCASE_E = "E";
@@ -109,6 +109,7 @@ namespace HighCInterpreterCore
         public const String INTEGER_LITERAL = "Integer Literal";
         public const String FLOAT_LITERAL = "Float Literal";
         public const String LIST = "List";
+        public const String VARIABLE = "Variable";
 
         //public const String NUMERIC_LITERAL = "Numeric Literal";
         public const String EXPONENT = "Exponent";

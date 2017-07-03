@@ -183,7 +183,7 @@ namespace HighCInterpreterCore
                         //Unicode 13: Carriage Return
                         if (characterBuffer == 10 || characterBuffer == 13)
                         {
-                            tokens.Add(new HighCToken(currentToken, lineNumber, startingColumnNumber));
+                            //tokens.Add(new HighCToken(currentToken, lineNumber, startingColumnNumber));
                             currentToken = "";
                             tokenStartPosition = -1;
                             mode = modes.CONSTRUCTING_NEW_TOKEN;

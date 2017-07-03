@@ -19,12 +19,42 @@ namespace HighCInterpreterCore
         {
             InitializeComponent();
             //textbox_InputBox.Text = "main"+Environment.NewLine+"{"+ Environment.NewLine+"out \"Hello World\""+Environment.NewLine+"}";
+
+            /*
             textbox_InputBox.Text =
+                "func test ( ) => void { }" + Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "}";
+                */
+            
+            textbox_InputBox.Text =
+                "//User Constants" + Environment.NewLine +
+                "const BOOL constBool = false" + Environment.NewLine +
+                "const INT constInt = 3" + Environment.NewLine +
+                "const FLOAT constFloat = 4.56" + Environment.NewLine +
+                "const CHAR constChar = \"q\"" + Environment.NewLine +
+                "const STRING constString = \"Constant String\"" + Environment.NewLine+ 
+                Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
                 "global create BOOL varBool = true" + Environment.NewLine +
-                "global create INT varInt = 1" + Environment.NewLine +
+                "global create INT varInt = 4" + Environment.NewLine +
                 "global create FLOAT varFloat = 1.23e1" + Environment.NewLine +
                 "global create CHAR varChar = \"g\"" + Environment.NewLine +
                 "global create STRING varString = \"Hello World\"" + Environment.NewLine +
+                Environment.NewLine +
+                "//Function Declarations" + Environment.NewLine +
+                "func testFunction ( ) => void { }" + Environment.NewLine +
+                "func testFunction2 ( ) => INT { out 2 }" + Environment.NewLine +
+                "func testFunction3 ( in INT p1 ) => STRING { out 3 }" + Environment.NewLine +
+                "func testFunction4 ( in INT p1, out BOOL p2, inout STRING p3, in out CHAR p4 ) => BOOL { out 3 }" + Environment.NewLine +
+                "pure func testFunction5 ( ) => void { out 3 }" + Environment.NewLine +
+                "recurs func testFunction6 ( ) => void { out 3 }" + Environment.NewLine +
+                "pure recurs func testFunction7 ( ) => void { out 3 }" + Environment.NewLine +
+                "recurs pure func testFunction8 ( ) => void { out 3 }" + Environment.NewLine +
+
+
+                Environment.NewLine +
                 "main" +Environment.NewLine+
                 "{"+Environment.NewLine +
                 "   create BOOL varBool2 = false" + Environment.NewLine +
@@ -32,7 +62,7 @@ namespace HighCInterpreterCore
                 "   create FLOAT varFloat2 = 1.2345e3" + Environment.NewLine +
                 "   create CHAR varChar2 = \"?\"" + Environment.NewLine +
                 "   create STRING varString2 = \"Goodbye\"" + Environment.NewLine +
-
+                Environment.NewLine +
                 "   out \"Global Boolean Variable: \", varBool, endl" + Environment.NewLine +
                 "   out \"Global Integer Variable: \", varInt, endl" + Environment.NewLine +
                 "   out \"Global Float Variable: \", varFloat, endl" + Environment.NewLine +
@@ -44,6 +74,14 @@ namespace HighCInterpreterCore
                 "   out \"Local Float Variable: \", varFloat2, endl" + Environment.NewLine +
                 "   out \"Local Character Variable: \", varChar2, endl" + Environment.NewLine +
                 "   out \"Local String Variable: \", varString2, endl" + Environment.NewLine +
+                "   out \"--------------------\", endl" + Environment.NewLine +
+                "   out \"Boolean Constant: \", constBool, endl" + Environment.NewLine +
+                "   out \"Integer Constant: \", constInt, endl" + Environment.NewLine +
+                "   out \"Float Constant: \", constFloat, endl" + Environment.NewLine +
+                "   out \"Character Constant: \", constChar, endl" + Environment.NewLine +
+                "   out \"String Constant: \", constString, endl" + Environment.NewLine +
+                "   out \"--------------------\", endl" + Environment.NewLine +
+                Environment.NewLine +
                 "   out \"Choice Test #1:\", endl" + Environment.NewLine +
                 "   out \"--------------------\", endl" + Environment.NewLine +
                 "   choice(varInt)" +Environment.NewLine+
@@ -51,11 +89,11 @@ namespace HighCInterpreterCore
                 "   {" + Environment.NewLine +
                 "     out 1, endl"+ Environment.NewLine +
                 "   }" + Environment.NewLine +
-                "   on (2)" + Environment.NewLine +
+                "   on (2 ... 4)" + Environment.NewLine +
                 "   {" + Environment.NewLine +
                 "     out 2, endl" + Environment.NewLine +
                 "   }" + Environment.NewLine +
-                "   on (3)" + Environment.NewLine +
+                "   on (5)" + Environment.NewLine +
                 "   {" + Environment.NewLine +
                 "     out 3, endl" + Environment.NewLine +
                 "   }" + Environment.NewLine +
@@ -63,8 +101,10 @@ namespace HighCInterpreterCore
                 "   {" + Environment.NewLine +
                 "     out false, endl" + Environment.NewLine +
                 "   }" + Environment.NewLine +
+                Environment.NewLine +
                 "   out \"Loop Test #1:\", endl" + Environment.NewLine +
                 "   out \"--------------------\", endl" + Environment.NewLine +
+                "   set varInt2 = 1" + Environment.NewLine +
                 "   loop" + Environment.NewLine +
                 "   {" + Environment.NewLine +
                 "     out varInt2, endl" + Environment.NewLine +
