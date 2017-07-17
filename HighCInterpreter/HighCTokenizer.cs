@@ -548,7 +548,22 @@ namespace HighCInterpreterCore
             {
                 return "Line: " + line + " \tColumn: " + column +" \t"+ text;
             }
-            return "Line: " + line + " \tColumn: " + column + " \t"+ text + " \tType: " + type;
+
+            return "Line: " + line + " \tColumn: " + column + " \tType: " + type + getSpaces(20-type.Length) + text;
+        }
+
+        private String getSpaces(int spaces)
+        {
+            String temp = "";
+
+            int i = 0;
+            while(i<spaces)
+            {
+                temp += " ";
+                i++;
+            }
+
+            return temp;
         }
     }
 }

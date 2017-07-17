@@ -9,6 +9,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HighCInterpreterCore;
 
+/*
+ * To Do:
+ * Rounding
+ * Non-Recursive Tracking
+ * Function Declaration
+ */
+
 namespace HighCInterpreterCore
 {
     public partial class Form1 : Form
@@ -18,16 +25,29 @@ namespace HighCInterpreterCore
         public Form1()
         {
             InitializeComponent();
-            //textbox_InputBox.Text = "main"+Environment.NewLine+"{"+ Environment.NewLine+"out \"Hello World\""+Environment.NewLine+"}";
 
-            /*
+            
             textbox_InputBox.Text =
-                "func test ( ) => void { }" + Environment.NewLine +
+                "func test ( in STRING output, in STRING output2 ) => void" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "     out output,\" \", output2, endl" + Environment.NewLine +
+                "}" + Environment.NewLine +
+                Environment.NewLine +
+                 "func test2 ( out STRING getString ) => void" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "     set getString = \"Test\"" + Environment.NewLine +
+                "}" + Environment.NewLine +
+                Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
+                "     create STRING stringBuffer = \"Initialized\"" + Environment.NewLine +
+                "     call test ( \"Hello\", \"World\" )" +Environment.NewLine +
+                "     call test2 ( stringBuffer )" + Environment.NewLine +
+                "     out stringBuffer" + Environment.NewLine +
                 "}";
-                */
-            
+            //*/    
+
+            /*
             textbox_InputBox.Text =
                 "//User Constants" + Environment.NewLine +
                 "const BOOL constBool = false" + Environment.NewLine +
@@ -52,8 +72,7 @@ namespace HighCInterpreterCore
                 "recurs func testFunction6 ( ) => void { out 3 }" + Environment.NewLine +
                 "pure recurs func testFunction7 ( ) => void { out 3 }" + Environment.NewLine +
                 "recurs pure func testFunction8 ( ) => void { out 3 }" + Environment.NewLine +
-
-
+                
                 Environment.NewLine +
                 "main" +Environment.NewLine+
                 "{"+Environment.NewLine +
@@ -112,6 +131,7 @@ namespace HighCInterpreterCore
                 "     set varInt2 = varInt2 + 1" + Environment.NewLine +
                 "   }" + Environment.NewLine +
                 "}";
+                //*/
         }
 
         private void Form1_Load(object sender, EventArgs e) { }
