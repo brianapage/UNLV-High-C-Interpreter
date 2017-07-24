@@ -21,12 +21,51 @@ namespace HighCInterpreterCore
     public partial class Form1 : Form
     {
         HighCTokenizer tokenizer;
+        enum weekdays { Monday, Tuesday };
 
         public Form1()
         {
             InitializeComponent();
-
             
+            //Default
+            textbox_InputBox.Text=
+                "//Compiler Directives"+ Environment.NewLine +
+                "//User Constants" + Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
+                "//Classes" + Environment.NewLine +
+                "//Functions" + Environment.NewLine +
+                "//Main" +Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                ""+Environment.NewLine +
+                "}";
+
+            /*Enum Testing
+            textbox_InputBox.Text =
+                "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}"+Environment.NewLine+
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "     out weekdays.Sunday" + Environment.NewLine +
+                "}";
+            //*/
+
+            /*
+            textbox_InputBox.Text =
+                "func test ( ) => FLOAT" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "     out \"Testing...\",endl" + Environment.NewLine +
+                "     return 3.14" + Environment.NewLine +
+                "}" + Environment.NewLine +
+                Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "     out test()" + Environment.NewLine +
+                "}";
+            //*/
+
+            //*
             textbox_InputBox.Text =
                 "func test ( in STRING output, in STRING output2 ) => void" + Environment.NewLine +
                 "{" + Environment.NewLine +
@@ -45,7 +84,7 @@ namespace HighCInterpreterCore
                 "     call test2 ( stringBuffer )" + Environment.NewLine +
                 "     out stringBuffer" + Environment.NewLine +
                 "}";
-            //*/    
+            //*/
 
             /*
             textbox_InputBox.Text =
