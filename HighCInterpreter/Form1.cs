@@ -41,12 +41,25 @@ namespace HighCInterpreterCore
                 ""+Environment.NewLine +
                 "}";
 
-            /*Enum Testing
-            textbox_InputBox.Text =
-                "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}"+Environment.NewLine+
+            //*Range Specification Testing
+             textbox_InputBox.Text =
+                "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                "     out weekdays.Sunday" + Environment.NewLine +
+                "     create weekdays:Monday ... Friday value = Tuesday" + Environment.NewLine +
+                "     out value" + Environment.NewLine +
+                "}";
+             //*/
+             
+            /*Enum Testing
+            textbox_InputBox.Text =
+                "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
+                "func test () => weekdays { return Monday }"+Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "     create weekdays value = Monday" + Environment.NewLine +
+                "     set value = Tuesday" + Environment.NewLine +
+                "     out value" + Environment.NewLine +
                 "}";
             //*/
 
@@ -65,7 +78,7 @@ namespace HighCInterpreterCore
                 "}";
             //*/
 
-            //*
+            /*
             textbox_InputBox.Text =
                 "func test ( in STRING output, in STRING output2 ) => void" + Environment.NewLine +
                 "{" + Environment.NewLine +
