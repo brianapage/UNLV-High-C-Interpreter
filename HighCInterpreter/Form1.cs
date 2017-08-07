@@ -41,24 +41,25 @@ namespace HighCInterpreterCore
                 ""+Environment.NewLine +
                 "}";
 
-            //*Range Specification Testing
+            /*Range Specification Testing
              textbox_InputBox.Text =
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                "     create weekdays:Monday ... Friday value = Tuesday" + Environment.NewLine +
+                "     create weekdays:Monday ... Friday value = Saturday" + Environment.NewLine +
                 "     out value" + Environment.NewLine +
                 "}";
              //*/
              
-            /*Enum Testing
+            //*Enum Testing
             textbox_InputBox.Text =
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
-                "func test () => weekdays { return Monday }"+Environment.NewLine +
+                "enum colors = {Red,Green,Blue}" + Environment.NewLine +
+                "func test () => weekdays { return Red }" + Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
                 "     create weekdays value = Monday" + Environment.NewLine +
-                "     set value = Tuesday" + Environment.NewLine +
+                "     set value = test()" + Environment.NewLine +
                 "     out value" + Environment.NewLine +
                 "}";
             //*/
