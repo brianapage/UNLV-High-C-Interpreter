@@ -38,7 +38,7 @@ namespace HighCInterpreterCore
                 Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                ""+Environment.NewLine +
+                "" + Environment.NewLine +
                 "}";
 
             /*Range Specification Testing
@@ -51,7 +51,7 @@ namespace HighCInterpreterCore
                 "}";
              //*/
              
-            //*Enum Testing
+            /*Enum Testing
             textbox_InputBox.Text =
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
                 "enum colors = {Red,Green,Blue}" + Environment.NewLine +
