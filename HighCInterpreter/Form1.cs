@@ -41,6 +41,35 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
+            
+             textbox_InputBox.Text=
+                "//Compiler Directives"+ Environment.NewLine +
+                "//User Constants" + Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
+                "//Classes" + Environment.NewLine +
+                "//Functions" + Environment.NewLine +
+                "//Main" +Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "   create INT limit = 93" + Environment.NewLine +
+                "   create INT current = 3" + Environment.NewLine +
+                "   create INT fibonnaci@ = { 1,1}" + Environment.NewLine + Environment.NewLine +
+                "   loop" + Environment.NewLine +
+                "   {" + Environment.NewLine +
+                "      append fibonnaci = (fibonnaci@(current - 1))+(fibonnaci@(current - 2))" + Environment.NewLine +
+                "      until(current = limit)" + Environment.NewLine +
+                "      set current = current + 1" + Environment.NewLine +
+                "   }" + Environment.NewLine + Environment.NewLine +
+                "   set current = 1" + Environment.NewLine +
+                "   for@(INT value in fibonnaci)" + Environment.NewLine +
+                "   {" + Environment.NewLine +
+                "      out current: 3, \": \", value, endl" + Environment.NewLine +
+                "      set current = current + 1" + Environment.NewLine +
+                "   }" + Environment.NewLine +
+            "}";
+             //*/
+
             /*Range Specification Testing
              textbox_InputBox.Text =
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
@@ -50,7 +79,7 @@ namespace HighCInterpreterCore
                 "     out value" + Environment.NewLine +
                 "}";
              //*/
-             
+
             /*Enum Testing
             textbox_InputBox.Text =
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
