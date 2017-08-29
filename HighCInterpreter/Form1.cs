@@ -41,7 +41,7 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
-            
+            /*
              textbox_InputBox.Text=
                 "//Compiler Directives"+ Environment.NewLine +
                 "//User Constants" + Environment.NewLine +
