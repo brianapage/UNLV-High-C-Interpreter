@@ -704,7 +704,7 @@ namespace HighCInterpreterCore
             value = null;
             /*
             Array <subscript>* ( <element – constant> )
-            { <element list> }
+            { <element list> } //For simplification, will handle here as one step
              */
 
             //Array <subscript>* ( <element – constant> )
@@ -776,23 +776,34 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
             /*
-            //{ <element list> }
+            //{ <element list> } //For simplification, will handle here as one step
             currentToken = storeToken;
-            if(matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+
+            int dimensionCounter = 0;
+            List<HighCData> arrayBuffer = new List<HighCData>();
+            while(matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
             {
-                if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET, true))
-                {
-                    return true;
-                }
-                else
-                {
-                    error();
-                    return false;
-                }
+                storeToken = currentToken;
+                dimensionCounter++;
             }
+            currentToken = storeToken;
+
+            int[] dimensionLengths = new int[dimensionCounter];
+            int currentLength = 0;
+            HighCData itemBuffer;
+            if(HC_element_constant(out itemBuffer))
+            {
+                arrayBuffer.Add(itemBuffer);
+                currentLength = 1;
+            }
+            else
+            {
+                return false;
+            }
+
             */
+
             return false;
         }
         
