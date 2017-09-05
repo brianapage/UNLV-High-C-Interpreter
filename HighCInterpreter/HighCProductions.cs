@@ -677,7 +677,7 @@ namespace HighCInterpreterCore
                     }
                     else
                     {
-                        addDebugInfo("While performing a modulus operation one or more operands were not integer values." );
+                        error("While performing a modulus operation one or more operands were not integer values." );
                         return false;
                     }
                 }
@@ -776,33 +776,175 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            /*
-            //{ <element list> } //For simplification, will handle here as one step
-            currentToken = storeToken;
 
-            int dimensionCounter = 0;
-            List<HighCData> arrayBuffer = new List<HighCData>();
-            while(matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+            //{ <element list> } 
+            //Rather than untangling lists of lists, this is parsed in a single pass here
+            //Each left bracket represents a step to the right in terms of dimensionality
+            //Each right bracket is a step left
+            //Ensures that each dimension has a consistent size between elements
+            currentToken = storeToken;
+            if (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
             {
                 storeToken = currentToken;
-                dimensionCounter++;
-            }
-            currentToken = storeToken;
+                int currentDimension = 1;
+                //Determine dimensionality from number of left side left brackets
+                while (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                {
+                    storeToken = currentToken;
+                    currentDimension++;
+                }
+                currentToken = storeToken;
 
-            int[] dimensionLengths = new int[dimensionCounter];
-            int currentLength = 0;
-            HighCData itemBuffer;
-            if(HC_element_constant(out itemBuffer))
-            {
-                arrayBuffer.Add(itemBuffer);
-                currentLength = 1;
-            }
-            else
-            {
-                return false;
-            }
+                int[] dimensionLengths = new int[currentDimension];
+                int[] dimensionCounters = new int[currentDimension];
+                int i = 0;
+                while (i < currentDimension)
+                {
+                    dimensionLengths[i] = 0;
+                    dimensionCounters[i] = 0;
+                    i++;
+                }
+                                
+                List<HighCData> arrayBuffer = new List<HighCData>();
+                currentDimension--;
+                HighCData itemBuffer;
 
-            */
+                //Shows which tokens are allowable at the next step
+                Boolean expectElement = true, 
+                        expectComma = false, 
+                        expectLeft = false, 
+                        expectRight = false,
+                        stillLooking = true;
+
+                //Runs until it hits a syntax error or finds the last right side bracket
+                while (currentDimension > -1)
+                {
+                    //If no valid token is found, this indicates a syntax error
+                    stillLooking = true;
+                    
+                    currentToken = storeToken;
+                    if(expectElement && HC_element_expression(out itemBuffer))
+                    {
+                        arrayBuffer.Add(itemBuffer);
+                        dimensionCounters[currentDimension]++;
+                        storeToken = currentToken;
+                        stillLooking = false;
+                        expectElement = false;
+                        expectComma = true;
+                        expectLeft = false;
+                        expectRight = true;
+                    }
+
+                    currentToken = storeToken;
+                    if(stillLooking && expectComma && matchTerminal(HighCTokenLibrary.COMMA))
+                    {
+                        storeToken = currentToken;
+                        stillLooking = false;
+                        if(currentDimension+1==dimensionCounters.Length)
+                        {
+                            expectElement = true;
+                            expectLeft = false;
+                        }
+                        else
+                        {
+                            expectLeft = true;
+                            expectElement = false;
+                        }
+                        expectComma = false;
+                        expectRight = false;
+                    }
+
+                    currentToken = storeToken;
+                    if(stillLooking && expectLeft && matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                    {
+                        storeToken = currentToken;
+                        stillLooking = false;
+                        currentDimension++;
+                        if(currentDimension + 1 == dimensionCounters.Length)
+                        {
+                            expectElement = true;
+                        }
+                        else
+                        {
+                            expectLeft = true;
+                        }
+                        expectComma = false;
+                        expectRight = false;
+                    }
+
+                    currentToken = storeToken;
+                    if(stillLooking && expectRight && matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET))
+                    {
+                        storeToken = currentToken;
+                        stillLooking = false;
+
+                        if(dimensionLengths[currentDimension]==0)
+                        {
+                            dimensionLengths[currentDimension] = dimensionCounters[currentDimension];
+                        }
+                        else if(dimensionCounters[currentDimension]!=dimensionLengths[currentDimension])
+                        {
+                            error("Array Constant: Ambiguous dimension size found for dimension "+(currentDimension+1)+", expected "+ dimensionLengths[currentDimension]+ " but found "+ dimensionCounters[currentDimension]+" instead.");
+                            return false;
+                        }
+                        dimensionCounters[currentDimension] = 0;
+                        currentDimension--;
+                        if(currentDimension>-1)
+                        {
+                            dimensionCounters[currentDimension]++;
+                        }
+                        expectComma = true;
+                        expectRight = true;
+                        expectElement = false;
+                        expectLeft = false;
+                    }
+
+                    if(stillLooking)
+                    {
+                        String errorMessage = "Array Constant: Was expecting one of the following:";
+                        if(expectLeft==true)
+                        {
+                            errorMessage += " a comma";
+                            if(expectElement==true || expectLeft==true || expectRight==true)
+                            {
+                                errorMessage += ",";
+                            }
+                        }
+
+                        if(expectElement==true)
+                        {
+                            errorMessage += " an element";
+                            if (expectLeft == true || expectRight == true)
+                            {
+                                errorMessage += ",";
+                            }
+                        }
+
+                        if (expectLeft == true)
+                        {
+                            errorMessage += " a left bracket";
+                            if (expectRight == true)
+                            {
+                                errorMessage += ", a right bracket";
+                            }
+                        }
+
+                        errorMessage += ".";
+
+                        error(errorMessage);
+                        return false;
+                    }
+                }
+                
+                HighCData[] array = arrayBuffer.ToArray();
+                
+                HighCArray newArray = new HighCArray(array, dimensionLengths.ToList<int>());
+
+                value = new HighCData(new HighCType(HighCType.ARRAY_SUBTYPE, array[0].type.dataType, array[0].type.objectReference), newArray);
+
+                Console.WriteLine(currentToken + " <array constant> -> <nested element list> -> " + value);
+                return true;
+            }
 
             return false;
         }
@@ -978,12 +1120,14 @@ namespace HighCInterpreterCore
                                 currentToken = storeToken;
                                 //If no slice was found but there were subscripts, it transforms
                                 //the last subscript into a slice of length 1.
+                                /*
                                 if (dimensions.Count > 0)
                                 {
                                     arraySliceIndex = dimensions.Last();
                                     arraySliceLength = 1;
                                     dimensions.RemoveAt(dimensions.Count - 1);
                                 }
+                                */
                             }
                         }
                     }
@@ -1063,7 +1207,7 @@ namespace HighCInterpreterCore
 
                                 if(dimensions.Count+1!=array.dimensions.Count)
                                 {
-                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected "+array.dimensions.Count+" number of dimensions specified.");
+                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected "+array.dimensions.Count+" dimensions specified, found "+ (dimensions.Count + 1)+".");
                                     return false;
                                 }
 
@@ -1083,103 +1227,102 @@ namespace HighCInterpreterCore
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Dimension index #" + (i + 1) + " can be at most " + array.dimensions[i] + ".");
                                     return false;
                                 }
-
-                                if (arraySliceLength > 1)
+                                
+                                if (value.isVariable())
                                 {
-                                    if (value.isVariable())
+                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Slices can only be assigned lists or single dimension arrays.");
+                                    return false;
+                                }
+                                else if (value.isList())
+                                {
+                                    if (value.getCount() == arraySliceLength)
                                     {
-                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Slices of size greater than one can only be assigned lists or single dimension arrays.");
+                                        i = 0;
+                                        while (i < arraySliceLength)
+                                        {
+                                            List<int> nextIndex = new List<int>();
+                                            foreach (int dim in dimensions)
+                                            {
+                                                nextIndex.Add(dim - 1);
+                                            }
+                                            nextIndex.Add(arraySliceIndex - 1 + i);
+
+                                            if (array.getItemAt(nextIndex).setData(((List<HighCData>)value.data)[i]) == false)
+                                            {
+                                                if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
+                                                {
+                                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
+                                                }
+                                                else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                                                {
+                                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + ((List<HighCData>)value.data)[i].type + ">, was expecting a <" + array.getItemAt(nextIndex).type + ">.");
+                                                }
+                                                else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                                                {
+                                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable can only accept values between " + (array.getItemAt(nextIndex).type.minimum) + " and " + (array.getItemAt(nextIndex).type.maximum) + ".");
+                                                }
+                                                return false;
+                                            }
+                                            i++;
+                                        }
+
+                                        Console.WriteLine(currentToken + " <assignment> -> set <variable>[]* = <list expression> -> " + foundItem);
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The length of the list (" + value.getCount() + ") must match the length of the slice (" + arraySliceLength + ").");
                                         return false;
                                     }
-                                    else if(value.isList())
+                                }
+                                else if (value.isArray())
+                                {
+                                    HighCArray valueArray = (HighCArray)value.data;
+                                    if (valueArray.array.Length == arraySliceLength)
                                     {
-                                        if (value.getCount() == arraySliceLength)
+                                        i = 0;
+                                        while (i < arraySliceLength)
                                         {
-                                            i = 0;
-                                            while(i<arraySliceLength)
+                                            List<int> nextIndex = new List<int>();
+                                            foreach (int dim in dimensions)
                                             {
-                                                List<int> nextIndex = new List<int>();
-                                                foreach(int dim in dimensions)
-                                                {
-                                                    nextIndex.Add(dim - 1);
-                                                }
-                                                nextIndex.Add(arraySliceIndex - 1 + i);
-
-                                                if(array.getItemAt(nextIndex).setData(((List<HighCData>)value.data)[i])==false)
-                                                {
-                                                    if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
-                                                    {
-                                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
-                                                    }
-                                                    else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_TYPE_MISMATCH)
-                                                    {
-                                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + ((List<HighCData>)value.data)[i].type + ">, was expecting a <" + array.getItemAt(nextIndex).type + ">.");
-                                                    }
-                                                    else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_OUT_OF_RANGE)
-                                                    {
-                                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable can only accept values between " + (array.getItemAt(nextIndex).type.minimum) + " and " + (array.getItemAt(nextIndex).type.maximum) + ".");
-                                                    }
-                                                    return false;
-                                                }
-                                                i++;
+                                                nextIndex.Add(dim - 1);
                                             }
+                                            nextIndex.Add(arraySliceIndex - 1 + i);
 
-                                            Console.WriteLine(currentToken + " <assignment> -> set <variable>[]* = <list expression> -> " + foundItem);
-                                            return true;
+                                            if (array.getItemAt(nextIndex).setData(valueArray.array[i]) == false)
+                                            {
+                                                if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
+                                                {
+                                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
+                                                }
+                                                else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                                                {
+                                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + valueArray.array[i].type + ">, was expecting a <" + array.getItemAt(nextIndex).type + ">.");
+                                                }
+                                                else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                                                {
+                                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable can only accept values between " + (array.getItemAt(nextIndex).type.minimum) + " and " + (array.getItemAt(nextIndex).type.maximum) + ".");
+                                                }
+                                                return false;
+                                            }
+                                            i++;
                                         }
-                                        else
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The length of the list ("+value.getCount()+") must match the length of the slice ("+arraySliceLength+").");
-                                            return false;
-                                        }
+
+                                        Console.WriteLine(currentToken + " <assignment> -> set <variable>[]* = <array expression> -> " + foundItem);
+                                        return true;
                                     }
-                                    else if(value.isArray())
+                                    else
                                     {
-                                        HighCArray valueArray = (HighCArray)value.data;
-                                        if (valueArray.array.Length == arraySliceLength)
-                                        {
-                                            i = 0;
-                                            while (i < arraySliceLength)
-                                            {
-                                                List<int> nextIndex = new List<int>();
-                                                foreach (int dim in dimensions)
-                                                {
-                                                    nextIndex.Add(dim - 1);
-                                                }
-                                                nextIndex.Add(arraySliceIndex - 1 + i);
-
-                                                if (array.getItemAt(nextIndex).setData(valueArray.array[i]) == false)
-                                                {
-                                                    if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
-                                                    {
-                                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
-                                                    }
-                                                    else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_TYPE_MISMATCH)
-                                                    {
-                                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + valueArray.array[i].type + ">, was expecting a <" + array.getItemAt(nextIndex).type + ">.");
-                                                    }
-                                                    else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_OUT_OF_RANGE)
-                                                    {
-                                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable can only accept values between " + (array.getItemAt(nextIndex).type.minimum) + " and " + (array.getItemAt(nextIndex).type.maximum) + ".");
-                                                    }
-                                                    return false;
-                                                }
-                                                i++;
-                                            }
-
-                                            Console.WriteLine(currentToken + " <assignment> -> set <variable>[]* = <array expression> -> " + foundItem);
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The length of the array (" + valueArray.array.Length + ") must match the length of the slice (" + arraySliceLength + ").");
-                                            return false;
-                                        }
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The length of the array (" + valueArray.array.Length + ") must match the length of the slice (" + arraySliceLength + ").");
+                                        return false;
                                     }
                                 }
-                                else if (arraySliceLength==1)
+
+                                /*else if (arraySliceLength == 1)
                                 {
-                                    if(value.isArray())
+                                    
+                                    if (value.isArray())
                                     {
                                         if (((HighCArray)value.data).array.Length == 1)
                                         {
@@ -1193,7 +1336,7 @@ namespace HighCInterpreterCore
                                     }
                                     else if (value.isList())
                                     {
-                                        if(((List<HighCData>)value.data).Count==1)
+                                        if (((List<HighCData>)value.data).Count == 1)
                                         {
                                             value = ((List<HighCData>)value.data)[0];
                                         }
@@ -1203,34 +1346,54 @@ namespace HighCInterpreterCore
                                             return false;
                                         }
                                     }
+                                }*/
 
-                                    List<int> nextIndex = new List<int>();
-                                    foreach (int dim in dimensions)
-                                    {
-                                        nextIndex.Add(dim - 1);
-                                    }
-                                    nextIndex.Add(arraySliceIndex - 1);
+                            }
+                            else if(dimensions.Count>0)
+                            {
+                                HighCArray array = (HighCArray)firstItem.data;
+                                List<int> nextIndex = new List<int>();
+                                foreach (int dim in dimensions)
+                                {
+                                    nextIndex.Add(dim - 1);
+                                }
 
-                                    if (array.getItemAt(nextIndex).setData(value) == false)
+                                if (dimensions.Count != array.dimensions.Count)
+                                {
+                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected " + array.dimensions.Count + " dimensions specified, found " + dimensions.Count +".");
+                                    return false;
+                                }
+
+                                int i = 0;
+                                while (i < dimensions.Count)
+                                {
+                                    if (dimensions[i] > array.dimensions[i])
                                     {
-                                        if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
-                                        }
-                                        else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_TYPE_MISMATCH)
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + value.type + ">, was expecting a <" + array.getItemAt(nextIndex).type + ">.");
-                                        }
-                                        else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_OUT_OF_RANGE)
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable can only accept values between " + (array.getItemAt(nextIndex).type.minimum) + " and " + (array.getItemAt(nextIndex).type.maximum) + ".");
-                                        }
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Dimension index #" + (i + 1) + " can be at most " + array.dimensions[i] + ".");
                                         return false;
                                     }
-
-                                    Console.WriteLine(currentToken + " <assignment> -> set <variable>[]* = <expression> -> " + foundItem);
-                                    return true;
+                                    i++;
                                 }
+                                
+                                if (array.getItemAt(nextIndex).setData(value) == false)
+                                {
+                                    if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
+                                    {
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
+                                    }
+                                    else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                                    {
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + value.type + ">, was expecting a <" + array.getItemAt(nextIndex).type + ">.");
+                                    }
+                                    else if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                                    {
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable can only accept values between " + (array.getItemAt(nextIndex).type.minimum) + " and " + (array.getItemAt(nextIndex).type.maximum) + ".");
+                                    }
+                                    return false;
+                                }
+
+                                Console.WriteLine(currentToken + " <assignment> -> set <variable>[]* = <expression> -> " + foundItem);
+                                return true;
                             }
 
                             if (currentEnvironment.changeItem(identifier, value, out foundItem))
@@ -3994,6 +4157,12 @@ namespace HighCInterpreterCore
                 //List
                 if (variableSubtype[0] == -1)
                 {
+                    if(constantValue.isList()==false)
+                    {
+                        error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + "@>.");
+                        return false;
+                    }
+
                     variable.type.memoryType = HighCType.LIST_SUBTYPE;
                     variable.type.dataType = expectedType.dataType;
                     Boolean floatFound=false;
@@ -4014,7 +4183,7 @@ namespace HighCInterpreterCore
                         {
                             if (newValue.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                             {
-                                error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + ">.");
+                                error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + "@>.");
                             }
                             else if (newValue.errorCode == HighCData.ERROR_OUT_OF_RANGE)
                             {
@@ -4042,31 +4211,31 @@ namespace HighCInterpreterCore
                 }
 
                 //Array
-                if(variableSubtype[0]>0)
+                if (variableSubtype[0]>0)
                 {
                     variable.type.memoryType = HighCType.ARRAY_SUBTYPE;
                     variable.type.dataType = expectedType.dataType;
                     Boolean floatFound = false;
-                    
-                    //Unspecified Array Cast
-                    if(constantValue.isArray())
+
+                    if (constantValue.isArray())
                     {
-                        if(((HighCArray)constantValue.data).isSeedValue==true)
+                        //Unspecified Array Cast
+                        if (((HighCArray)constantValue.data).isSeedValue == true)
                         {
                             int size = 1;
-                            foreach(int dimensionLength in variableSubtype)
+                            foreach (int dimensionLength in variableSubtype)
                             {
                                 size = size * dimensionLength;
                             }
 
-                            if(((HighCArray)constantValue.data).array[0].isFloat())
+                            if (((HighCArray)constantValue.data).array[0].isFloat())
                             {
                                 floatFound = true;
                             }
 
                             HighCData[] array = new HighCData[size];
                             int i = 0;
-                            while(i<array.Length)
+                            while (i < array.Length)
                             {
                                 HighCType itemType = new HighCType(HighCType.VARIABLE_SUBTYPE,
                                                                     expectedType.dataType,
@@ -4075,7 +4244,7 @@ namespace HighCInterpreterCore
                                 itemType.maximum = expectedType.maximum;
 
                                 array[i] = new HighCData(itemType, null, !isConstant, true);
-                                if(array[i].setData(((HighCArray)constantValue.data).array[0])==false)
+                                if (array[i].setData(((HighCArray)constantValue.data).array[0]) == false)
                                 {
                                     if (array[i].errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                     {
@@ -4087,14 +4256,14 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        error("Unknown Error 2." + array[0]  + " " + ((HighCArray)constantValue.data).array[0]);
+                                        error("Unknown Error 2." + array[0] + " " + ((HighCArray)constantValue.data).array[0]);
                                     }
                                     return false;
                                 }
                                 i++;
                             }
 
-                            if(floatFound==true)
+                            if (floatFound == true)
                             {
                                 type = new HighCType(HighCType.ARRAY_SUBTYPE, HighCType.FLOAT_TYPE);
                             }
@@ -4111,20 +4280,21 @@ namespace HighCInterpreterCore
                             Console.WriteLine(currentToken + " <initiated variable> -> <variable> = <constant> ->" + variableSubtype + " " + variableName + " " + variable);
                             return true;
                         }
+                        //Array
                         else
                         {
                             int size = 1;
                             int j = 0;
                             HighCArray constantArray = (HighCArray)constantValue.data;
-                            
+
                             //Ensure Same Dimension Lengths
-                            if(constantArray.dimensions.Count != variableSubtype.Count)
+                            if (constantArray.dimensions.Count != variableSubtype.Count)
                             {
-                                error("Declaration \"" + variableName + "\": The number of dimensions of the left hand declaration ("+ variableSubtype.Count + ") must match the right side ("+ constantArray.dimensions.Count + ").");
+                                error("Declaration \"" + variableName + "\": The number of dimensions of the left hand declaration (" + variableSubtype.Count + ") must match the right side (" + constantArray.dimensions.Count + ").");
                                 return false;
                             }
 
-                            while (j<variableSubtype.Count)
+                            while (j < variableSubtype.Count)
                             {
                                 if (constantArray.dimensions[j] != variableSubtype[j])
                                 {
@@ -4139,8 +4309,6 @@ namespace HighCInterpreterCore
                                 size = size * dimensionLength;
                             }
 
-                            
-                            
                             HighCData[] array = new HighCData[size];
                             int i = 0;
                             while (i < array.Length)
@@ -4151,13 +4319,13 @@ namespace HighCInterpreterCore
                                 itemType.minimum = expectedType.minimum;
                                 itemType.maximum = expectedType.maximum;
 
-                                if (((HighCArray)constantValue.data).array[i].isFloat())
+                                if (constantArray.array[i].isFloat())
                                 {
                                     floatFound = true;
                                 }
 
                                 array[i] = new HighCData(itemType, null, !isConstant, true);
-                                if (array[i].setData(((HighCArray)constantValue.data).array[i]) == false)
+                                if (array[i].setData(constantArray.array[i]) == false)
                                 {
                                     if (array[i].errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                     {
@@ -4182,7 +4350,94 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                type = ((HighCArray)constantValue.data).array[0].type;
+                                type = constantArray.array[0].type;
+                            }
+
+                            HighCArray newArray = new HighCArray(array, variableSubtype);
+
+                            variable.data = newArray;
+                            currentEnvironment.addNewItem(variableName, variable);
+                            
+                            Console.WriteLine(currentToken + " <initiated variable> -> <variable> = <constant> ->" + variableSubtype + " " + variableName + " " + variable);
+                            return true;
+                        }
+                    }
+                    //List
+                    //This handles an ambiguity between a single dimension nested list and a list constant
+                    else if (variableSubtype.Count == 1 &&
+                            constantValue.isList())
+                    {
+                        if (constantValue.getCount() == variableSubtype[0])
+                        {
+                            int size = 1;
+                            int j = 0;
+
+                            HighCArray constantArray = new HighCArray(((List<HighCData>)constantValue.data).ToArray(), variableSubtype);
+
+                            //Ensure Same Dimension Lengths
+                            if (constantArray.dimensions.Count != variableSubtype.Count)
+                            {
+                                error("Declaration \"" + variableName + "\": The number of dimensions of the left hand declaration (" + variableSubtype.Count + ") must match the right side (" + constantArray.dimensions.Count + ").");
+                                return false;
+                            }
+
+                            while (j < variableSubtype.Count)
+                            {
+                                if (constantArray.dimensions[j] != variableSubtype[j])
+                                {
+                                    error("Declaration \"" + variableName + "\": The size of each dimension must match exactly.");
+                                    return false;
+                                }
+                                j++;
+                            }
+
+                            foreach (int dimensionLength in variableSubtype)
+                            {
+                                size = size * dimensionLength;
+                            }
+
+                            HighCData[] array = new HighCData[size];
+                            int i = 0;
+                            while (i < array.Length)
+                            {
+                                HighCType itemType = new HighCType(HighCType.VARIABLE_SUBTYPE,
+                                                                    expectedType.dataType,
+                                                                    expectedType.objectReference);
+                                itemType.minimum = expectedType.minimum;
+                                itemType.maximum = expectedType.maximum;
+
+                                if (constantArray.array[i].isFloat())
+                                {
+                                    floatFound = true;
+                                }
+
+                                array[i] = new HighCData(itemType, null, !isConstant, true);
+                                if (array[i].setData(constantArray.array[i]) == false)
+                                {
+                                    if (array[i].errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                                    {
+                                        error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + ">.");
+                                    }
+                                    else if (array[i].errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                                    {
+                                        error("Declaration \"" + variableName + "\": This variable must be initialized with a value between " + (variable.type.minimum) + " and " + (variable.type.maximum) + ".");
+                                    }
+                                    else
+                                    {
+                                        error("Unknown Error 3." + array[i] + " " + ((HighCArray)constantValue.data).array[i]);
+                                    }
+                                    return false;
+                                }
+                                i++;
+                            }
+
+                            if (floatFound == true)
+                            {
+                                type = new HighCType(HighCType.ARRAY_SUBTYPE, HighCType.FLOAT_TYPE);
+                            }
+                            else
+                            {
+                                type = constantArray.array[0].type;
                             }
 
                             HighCArray newArray = new HighCArray(array, variableSubtype);
@@ -4193,14 +4448,17 @@ namespace HighCInterpreterCore
                             Console.WriteLine(currentToken + " <initiated variable> -> <variable> = <constant> ->" + variableSubtype + " " + variableName + " " + variable);
                             return true;
                         }
+                        else
+                        {
+                            error("Declaration \"" + variableName + "\": The number of elements in the list ("+ constantValue.getCount() + ") did not match the specified array size ("+ variableSubtype[0] + ").");
+                            return false;
+                        }
                     }
                     else
                     {
                         error("Declaration \"" + variableName + "\": This variable must be initialized with a list (or nested list) of elements or an Array() cast.");
                         return false;
                     }
-                    //Specified Array Cast
-                    //Element List
                 }
             }
             return false;
@@ -5024,6 +5282,14 @@ namespace HighCInterpreterCore
                 values = new List<HighCData>();
 
                 storeToken = currentToken;
+
+                //Allows for nested lists for arrays
+                if(matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                {
+                    return false;
+                }
+
+                currentToken = storeToken;
                 HighCData newElement;
                 if (HC_element_constant(out newElement))
                 { 

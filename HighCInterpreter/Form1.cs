@@ -41,6 +41,24 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
+            textbox_InputBox.Text =
+                "//Compiler Directives" + Environment.NewLine +
+                "//User Constants" + Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
+                "//Classes" + Environment.NewLine +
+                "//Functions" + Environment.NewLine +
+                "//Main" + Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "   create INT nums[3][2]={{1,2},{3,4},{5,6}}" + Environment.NewLine +
+                "   for[](INT val in nums)" + Environment.NewLine +
+                "   {" + Environment.NewLine +
+                "      out val, endl" + Environment.NewLine +
+                "   }" + Environment.NewLine +
+                "}";
+            //*/
+
             /*
              textbox_InputBox.Text=
                 "//Compiler Directives"+ Environment.NewLine +
