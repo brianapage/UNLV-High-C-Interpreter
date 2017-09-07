@@ -41,8 +41,21 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
-            
             textbox_InputBox.Text =
+                "//Compiler Directives" + Environment.NewLine +
+                "//User Constants" + Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
+                "//Classes" + Environment.NewLine +
+                "//Functions" + Environment.NewLine +
+                "//Main" + Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "   out ((3=3) | false)" + Environment.NewLine +
+                "}";
+            //*/
+
+            /*textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
                 "//User Constants" + Environment.NewLine +
                 "//Global Variables" + Environment.NewLine +

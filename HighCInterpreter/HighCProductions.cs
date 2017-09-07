@@ -3307,20 +3307,30 @@ namespace HighCInterpreterCore
                 {
                     if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true))
                     {
-                        storeToken = currentToken;
-                        Boolean boolTerm;
-                        if (HC_relational_expression(value, out boolTerm))
+                        Console.WriteLine(currentToken + " <expression> -> ( <expression> )");
+                        if(value.isBoolean())
                         {
-                            value = new HighCData(HighCType.BOOLEAN_TYPE, boolTerm);
-                            Console.WriteLine(currentToken + " <expression> -> <list expression><equality op><list expression>" + " -> " + value.ToString());
-                            return true;
+                            storeToken = currentToken;
+                            Boolean boolTerm = (Boolean)value.data;
+                            if(HC_boolean_expression_helper(ref boolTerm))
+                            {
+                                value.setValue(boolTerm);
+                            }
+                            else
+                            {
+                                currentToken = storeToken;
+                                boolTerm = (Boolean)value.data;
+                                if (HC_boolean_term_helper(ref boolTerm))
+                                {
+                                    value.setValue(boolTerm);
+                                }
+                                else
+                                {
+                                    currentToken = storeToken;
+                                }
+                            }
                         }
-                        else
-                        {
-                            currentToken = storeToken;
-                            Console.WriteLine(currentToken + " <expression> -> ( <expression> )");
-                            return true;
-                        }
+                        return true;
                     }
                     else
                     {
@@ -6305,30 +6315,6 @@ namespace HighCInterpreterCore
                         return false;
                     }
                 }
-                else if (term.isBoolean())
-                {
-                    Boolean boolTerm=false;
-                    if (HC_boolean_expression(ref boolTerm))
-                    {
-                        term2 = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.BOOLEAN_TYPE), boolTerm);
-
-                        if (term.compare(term2, opType, out value) == true)
-                        {
-                            Console.WriteLine(currentToken + " <relational expression> -> <character expression><relational op><character expression>" + " -> " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("Relational Expression (Enumeration): The type of the first argument <" + term.type + "> does not match the type of second <" + term2.type + ">.");
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        error("Relational Expression: A second " + HighCTokenLibrary.CHARACTER + " value was expected after \"" + opType + "\".");
-                        return false;
-                    }
-                }
                 else
                 {
                     error("Relational Expression: Unknown Type.");
@@ -7692,7 +7678,7 @@ namespace HighCInterpreterCore
     public class HighCData
     {
         //Error Codes
-        public const int ERROR_TYPE_MISMATCH = 1, ERROR_OUT_OF_RANGE = 2, ERROR_EMPTY_STRING = 3, ERROR_CONSTANT_CHANGED=4, ERROR_ARRAY_DIMENSION_MISMATCH=5;
+        public const int ERROR_TYPE_MISMATCH = 1, ERROR_OUT_OF_RANGE = 2, ERROR_EMPTY_STRING = 3, ERROR_CONSTANT_CHANGED=4, ERROR_ARRAY_DIMENSION_MISMATCH=5, ERROR_INVALID_OPERATOR=6;
 
         public Object data;
         public HighCType type;
@@ -8300,6 +8286,26 @@ namespace HighCInterpreterCore
                 else if (opType == HighCTokenLibrary.LESS_THAN_EQUAL) { value = enumTerm1.rank <= enumTerm2.rank; }
                 else if (opType == HighCTokenLibrary.GREATER_THAN_EQUAL) { value = enumTerm1.rank >= enumTerm2.rank; }
                 
+                return true;
+            }
+
+            if(isBoolean())
+            {
+                Boolean boolTerm1 = (Boolean)(data);
+                Boolean boolTerm2;
+                if (value2.isBoolean())
+                {
+                    boolTerm2 = (Boolean)value2.data;
+                }
+                else
+                {
+                    errorCode = ERROR_TYPE_MISMATCH;
+                    return false;
+                }
+
+                if (opType == HighCTokenLibrary.EQUAL) { value = term1 == term2; }
+                else if (opType == HighCTokenLibrary.NOT_EQUAL) { value = term1 != term2; }
+                else { errorCode = ERROR_INVALID_OPERATOR; return false; }
                 return true;
             }
 
