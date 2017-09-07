@@ -3305,10 +3305,27 @@ namespace HighCInterpreterCore
             {
                 if (HC_expression(out value))
                 {
-                    if(matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS,true))
+                    if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true))
                     {
-                        Console.WriteLine(currentToken + " <expression> -> ( <expression> )");
-                        return true;
+                        storeToken = currentToken;
+                        Boolean boolTerm;
+                        if (HC_relational_expression(value, out boolTerm))
+                        {
+                            value = new HighCData(HighCType.BOOLEAN_TYPE, boolTerm);
+                            Console.WriteLine(currentToken + " <expression> -> <list expression><equality op><list expression>" + " -> " + value.ToString());
+                            return true;
+                        }
+                        else
+                        {
+                            currentToken = storeToken;
+                            Console.WriteLine(currentToken + " <expression> -> ( <expression> )");
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        error();
+                        return false;
                     }
                 }
                 else
@@ -6047,9 +6064,33 @@ namespace HighCInterpreterCore
                         return false;
                     }
                 }
+                else if (term.isBoolean())
+                {
+                    Boolean boolTerm=false;
+                    if (HC_boolean_expression(ref boolTerm))
+                    {
+                        term2 = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.BOOLEAN_TYPE), boolTerm);
+
+                        if (term.compare(term2, opType, out value) == true)
+                        {
+                            Console.WriteLine(currentToken + " <relational expression> -> <character expression><relational op><character expression>" + " -> " + value);
+                            return true;
+                        }
+                        else
+                        {
+                            error("Relational Expression (Enumeration): The type of the first argument <" + term.type + "> does not match the type of second <" + term2.type + ">.");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        error("Relational Expression: A second " + HighCTokenLibrary.CHARACTER + " value was expected after \"" + opType + "\".");
+                        return false;
+                    }
+                }
                 else
                 {
-                    error("Relation Expression: Unknown Type.");
+                    error("Relational Expression: Unknown Type.");
                     return false;
                 }
             }
