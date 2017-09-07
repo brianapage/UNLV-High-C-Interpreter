@@ -4656,7 +4656,7 @@ namespace HighCInterpreterCore
                             {
                                 if(globalEnvironment.contains(identifier))
                                 {
-                                    error("For@: The identifier \""+identifier+"\" cannot be reused, it is already declared in the global scope.");
+                                    error(HighCTokenLibrary.FOR+"@: The identifier \""+identifier+"\" cannot be reused, it is already declared in the global scope.");
                                     return false;
                                 }
 
@@ -4672,7 +4672,7 @@ namespace HighCInterpreterCore
                                             {
                                                 if(skipBlock()==false)
                                                 {
-                                                    error("For@: Expected a block \"{ }\".");
+                                                    error(HighCTokenLibrary.FOR+"@: Expected a block \"{ }\".");
                                                     return false;
                                                 }
                                             }
@@ -4697,11 +4697,11 @@ namespace HighCInterpreterCore
                                                     {
                                                         if (newItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                                         {
-                                                            error("For@ \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
+                                                            error(HighCTokenLibrary.FOR+"@ \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
                                                         }
                                                         else if (newItem.errorCode == HighCData.ERROR_OUT_OF_RANGE)
                                                         {
-                                                            error("For@ \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
+                                                            error(HighCTokenLibrary.FOR+"@ \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
                                                         }
                                                         error();
                                                         return false;
@@ -4709,7 +4709,7 @@ namespace HighCInterpreterCore
                                                     newEnvironment.addNewItem(identifier, newItem);
                                                     if(HC_block(newEnvironment)==false)
                                                     {
-                                                        error("For@: Expected a block \"{ }\".");
+                                                        error(HighCTokenLibrary.FOR+"@: Expected a block \"{ }\".");
                                                         return false;
                                                     }
                                                     
@@ -4727,19 +4727,19 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        error("For@: Expected a list.");
+                                        error(HighCTokenLibrary.FOR+"@: Expected a list.");
                                         return false;
                                     }
                                 }
                                 else
                                 {
-                                    error("For@: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
+                                    error(HighCTokenLibrary.FOR+"@: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
                                     return false;
                                 }
                             }
                             else
                             {
-                                error("For@: Expected an identifier.");
+                                error(HighCTokenLibrary.FOR+"@: Expected an identifier.");
                                 return false;
                             }
                         }
@@ -4776,7 +4776,7 @@ namespace HighCInterpreterCore
                             {
                                 if (globalEnvironment.contains(identifier))
                                 {
-                                    error("For[]: The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
+                                    error(HighCTokenLibrary.FOR+"[]: The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
                                     return false;
                                 }
 
@@ -4793,7 +4793,7 @@ namespace HighCInterpreterCore
                                             {
                                                 if (skipBlock() == false)
                                                 {
-                                                    error("For@: Expected a block \"{ }\".");
+                                                    error(HighCTokenLibrary.FOR+"@: Expected a block \"{ }\".");
                                                     return false;
                                                 }
                                             }
@@ -4818,11 +4818,11 @@ namespace HighCInterpreterCore
                                                     {
                                                         if (newItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                                         {
-                                                            error("For[] \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
+                                                            error(HighCTokenLibrary.FOR+"[] \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
                                                         }
                                                         else if (newItem.errorCode == HighCData.ERROR_OUT_OF_RANGE)
                                                         {
-                                                            error("For[] \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
+                                                            error(HighCTokenLibrary.FOR+"[] \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
                                                         }
                                                         error();
                                                         return false;
@@ -4830,7 +4830,7 @@ namespace HighCInterpreterCore
                                                     newEnvironment.addNewItem(identifier, newItem);
                                                     if (HC_block(newEnvironment) == false)
                                                     {
-                                                        error("For[]: Expected a block \"{ }\".");
+                                                        error(HighCTokenLibrary.FOR+"[]: Expected a block \"{ }\".");
                                                         return false;
                                                     }
 
@@ -4848,19 +4848,19 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        error("For[]: Expected an array.");
+                                        error(HighCTokenLibrary.FOR+"[]: Expected an array.");
                                         return false;
                                     }
                                 }
                                 else
                                 {
-                                    error("For[]: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
+                                    error(HighCTokenLibrary.FOR+"[]: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
                                     return false;
                                 }
                             }
                             else
                             {
-                                error("For[]: Expected an identifier.");
+                                error(HighCTokenLibrary.FOR+"[]: Expected an identifier.");
                                 return false;
                             }
                         }
@@ -4880,9 +4880,250 @@ namespace HighCInterpreterCore
                 {
                     currentToken = storeToken;
                 }
+                
+                //for ( <discrete type> <id> <dir> <expr> … <expr> ) <block>
+                if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true))
+                {
+                    if (HC_discrete_type(out type) == false)
+                    {
+                        error(HighCTokenLibrary.FOR+": Expected a discrete type ("+HighCTokenLibrary.BOOLEAN+", "+HighCTokenLibrary.CHARACTER + ", " + HighCTokenLibrary.ENUMERATION + ", or "+ HighCTokenLibrary.INTEGER+").");
+                        return false;
+                    }
+
+                    if (HC_id(out identifier) == false)
+                    {
+                        error(HighCTokenLibrary.FOR+": Expected an identifier.");
+                        return false;
+                    }
+                    
+                    if (globalEnvironment.contains(identifier))
+                    {
+                        error(HighCTokenLibrary.FOR+": The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
+                        return false;
+                    }
+
+                    if (HC_dir(out direction)==false)
+                    {
+                        error(HighCTokenLibrary.FOR+": Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
+                        return false;
+                    }
+
+                    HighCData leftExpression;
+                    if (HC_expression(out leftExpression) ==false)
+                    {
+                        error(HighCTokenLibrary.FOR+": Expected an expression to specify the value to start at.");
+                        return false;
+                    }
+
+                    if(matchTerminal(HighCTokenLibrary.ELLIPSES,true)==false)
+                    {
+                        error();
+                        return false;
+                    }
+
+                    HighCData rightExpression;
+                    if (HC_expression(out rightExpression) == false)
+                    {
+                        error(HighCTokenLibrary.FOR + ": Expected an expression to specify the value to end at.");
+                        return false;
+                    }
+
+                    if(leftExpression.type.dataType!=rightExpression.type.dataType ||
+                        leftExpression.type.memoryType!=rightExpression.type.memoryType ||
+                        leftExpression.type.objectReference!=rightExpression.type.objectReference)
+                    {
+                        error(HighCTokenLibrary.FOR + ": The lower and upper bound must have the same type.");
+                        return false;
+                    }
+
+
+                    if (type.dataType != leftExpression.type.dataType ||
+                        type.memoryType != leftExpression.type.memoryType ||
+                        type.objectReference != leftExpression.type.objectReference)
+                    {
+                        error(HighCTokenLibrary.FOR + ": The lower bound must have the same type as the variable " + identifier + ".");
+                        return false;
+                    }
+
+                    if (type.dataType != rightExpression.type.dataType ||
+                        type.memoryType != rightExpression.type.memoryType ||
+                        type.objectReference != rightExpression.type.objectReference)
+                    {
+                        error(HighCTokenLibrary.FOR + ": The upper bound must have the same type as the variable "+identifier+".");
+                        return false;
+                    }
+
+                    Boolean isLeftLessThanOrEqualToRight;
+                    leftExpression.compare(rightExpression, "<=", out isLeftLessThanOrEqualToRight);
+
+                    if(isLeftLessThanOrEqualToRight==false)
+                    {
+                        error(HighCTokenLibrary.FOR + ": The lower bound was greater than the upper bound.");
+                        return false;
+                    }
+
+                    if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true)==false)
+                    {
+                        error();
+                        return false;
+                    }
+
+                    HighCData lowerBound = new HighCData(type);
+                    HighCData upperBound = new HighCData(type);
+
+                    if(lowerBound.setData(leftExpression)==false)
+                    {
+                        if (lowerBound.errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                        {
+                            error(HighCTokenLibrary.FOR + ": The lower bound cannot be a value of type <" + leftExpression.type + ">, was expecting a <" + lowerBound.type + ">.");
+                        }
+                        else if (lowerBound.errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                        {
+                            error(HighCTokenLibrary.FOR + ": The lower bound must be a value between " + (lowerBound.type.minimum) + " and " + (lowerBound.type.maximum) + ".");
+                        }
+                        else
+                        {
+                            error(HighCTokenLibrary.FOR + "Unknown Error.");
+                        }
+                        return false;
+                    }
+
+                    if (upperBound.setData(rightExpression) == false)
+                    {
+                        if (upperBound.errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                        {
+                            error(HighCTokenLibrary.FOR + ": The upper bound cannot be a value of type <" + rightExpression.type + ">, was expecting a <" + upperBound.type + ">.");
+                        }
+                        else if (upperBound.errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                        {
+                            error(HighCTokenLibrary.FOR + ": This upper bound must be a value between " + (upperBound.type.minimum) + " and " + (upperBound.type.maximum) + ".");
+                        }
+                        else
+                        {
+                            error(HighCTokenLibrary.FOR + "Unknown Error.");
+                        }
+                        return false;
+                    }
+
+                    int startOfBlock = currentToken;
+                    HighCData currentValue = lowerBound.getVariableOfType();
+                    HighCData limitValue = lowerBound.getVariableOfType();
+
+                    if (direction == true)
+                    {
+                        currentValue.setData(lowerBound);
+                        limitValue.setData(upperBound);
+                    }
+                    else
+                    {
+                        currentValue.setData(upperBound);
+                        limitValue.setData(lowerBound);
+                    }
+
+                    Boolean continueLooping=true;
+                    //currentValue.compare(limitValue, "~=", out continueLooping);
+                    
+                    while (continueLooping)
+                    {
+                        currentValue.compare(limitValue, "~=", out continueLooping);
+                        currentToken = startOfBlock;
+                        HighCEnvironment newEnvironment = new HighCEnvironment(currentEnvironment);
+                        HighCData newItem = new HighCData(type);
+
+                        if (newItem.setData(currentValue) == false)
+                        {
+                            if (newItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                            {
+                                error(HighCTokenLibrary.FOR + " \"" + identifier + "\": This variable cannot be changed to a value of type <" + currentValue.type + ">, was expecting a <" + type + ">.");
+                            }
+                            else if (newItem.errorCode == HighCData.ERROR_OUT_OF_RANGE)
+                            {
+                                error(HighCTokenLibrary.FOR + " \"" + identifier + "\": This variable's value must stay between " + (type.minimum) + " and " + (type.maximum) + ".");
+                            }
+                            else
+                            {
+                                error(HighCTokenLibrary.FOR + " \"" + identifier + "\": Unknown Error ("+newItem.errorCode+").");
+                            }
+                            return false;
+                        }
+                        newEnvironment.addNewItem(identifier, newItem);
+                        if (HC_block(newEnvironment) == false)
+                        {
+                            error(HighCTokenLibrary.FOR+": Expected a block \"{ }\".");
+                            return false;
+                        }
+                        
+                        if (type.isInteger())
+                        {
+                            if(direction==true)
+                            {
+                                currentValue.data = (Int64)(currentValue.data) + 1;
+                            }
+                            else
+                            {
+                                currentValue.data = (Int64)(currentValue.data) - 1;
+                            }
+                        }
+                        else if(type.isBoolean())
+                        {
+                            if(direction==true)
+                            {
+                                if((Boolean)(currentValue.data)==true)
+                                {
+                                    error("For: Unknown Error");
+                                    return false;
+                                }
+                                else
+                                {
+                                    currentValue.data = true;
+                                }
+                            }
+                            else
+                            {
+                                if ((Boolean)(currentValue.data) == false)
+                                {
+                                    error("For: Unknown Error");
+                                    return false;
+                                }
+                                else
+                                {
+                                    currentValue.data = false;
+                                }
+                            }
+                        }
+                        else if(type.isCharacter())
+                        {
+                            if (direction == true)
+                            {
+                                currentValue.data = ""+(Char)(((String)(currentValue.data))[0] + 1);
+                            }
+                            else
+                            {
+                                currentValue.data = ""+(Char)(((String)(currentValue.data))[0] - 1);
+                            }
+                        }
+                        else if (type.isEnumeration())
+                        {
+                            if (direction == true)
+                            {
+                                currentValue.data = ((HighCEnumerationType)(type.objectReference)).getNext(((HighCEnumeration)currentValue.data).identifier);
+                            }
+                            else
+                            {
+                                currentValue.data = ((HighCEnumerationType)(type.objectReference)).getPrevious(((HighCEnumeration)currentValue.data).identifier);
+                            }
+                        }
+                    }
+                    
+                    return true;    
+                }
+                else
+                {
+                    error();
+                    return false;
+                }
             }
          
-
             return false;
         }
 
@@ -7975,9 +8216,8 @@ namespace HighCInterpreterCore
 
                 return true;
             }
-
-
-            if (isString() || isCharacter())
+            
+            if (isString())
             {
                 stringTerm1 = (String)data;
                 if (value2.isString() ||
@@ -8002,7 +8242,42 @@ namespace HighCInterpreterCore
                     
                 return true;
             }
-           
+
+            if (isCharacter())
+            {
+                stringTerm1 = (String)data;
+                if (value2.isString() ||
+                    value2.isCharacter())
+                {
+                    stringTerm2 = (String)value2.data;
+                }
+                else
+                {
+                    errorCode = ERROR_TYPE_MISMATCH;
+                    return false;
+                }
+
+                int order = String.Compare(stringTerm1, stringTerm2);
+                
+                if(stringTerm2.Length==0)
+                {
+                    errorCode = ERROR_EMPTY_STRING;
+                    return false;
+                }
+
+                Char character1 = stringTerm1[0];
+                Char character2 = stringTerm2[0];
+
+                if (opType == HighCTokenLibrary.EQUAL) { value = character1 == character2; }
+                else if (opType == HighCTokenLibrary.NOT_EQUAL) { value = character1 != character2; }
+                else if (opType == HighCTokenLibrary.LESS_THAN) { value = character1 < character2; }
+                else if (opType == HighCTokenLibrary.GREATER_THAN) { value = character1 > character2; }
+                else if (opType == HighCTokenLibrary.LESS_THAN_EQUAL) { value = character1 <= character2; }
+                else if (opType == HighCTokenLibrary.GREATER_THAN_EQUAL) { value = character1 >= character2; }
+
+                return true;
+            }
+            
             if (isEnumeration())
             {
                 HighCEnumeration enumTerm1 = (HighCEnumeration)data;
