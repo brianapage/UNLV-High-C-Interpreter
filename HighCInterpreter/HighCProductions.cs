@@ -24,6 +24,8 @@ namespace HighCInterpreterCore
         private HighCData returnValue;
         private List<HighCFunctionDeclaration> nonRecursiveFunctionCalls;
         private Boolean pureStatus = false;
+        //Limitations
+        private int maxArrayDimensions = 10;
 
         public HighCParser(List<HighCToken> newTokens)
         {
@@ -1519,28 +1521,38 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_boolean_expression(ref Boolean value)
+        private Boolean HC_boolean_expression(ref Boolean value, HighCData foundBoolean=null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_boolean_expression"); }
             value = false;
 
-            if (HC_boolean_term(ref value) &&
+            if (HC_boolean_term(ref value, foundBoolean) &&
                HC_boolean_expression_helper(ref value))
             {
                 Console.WriteLine(currentToken + " <boolean expression> -> <boolean term><boolean expression helper>" + " -> " + value);
 
                 int storeToken = currentToken;
                 String opType;
-                Boolean boolTerm2 = false;
-                if (HC_equality_op(out opType) &&
-                    HC_boolean_expression(ref boolTerm2))
+                if (HC_equality_op(out opType))
                 {
-                    if (opType == HighCTokenLibrary.EQUAL) { value = value == boolTerm2; }
-                    else if (opType == HighCTokenLibrary.NOT_EQUAL) { value = value != boolTerm2; }
+                    HighCData itemBuffer;
+                    if (HC_expression(out itemBuffer) &&
+                        itemBuffer.isBoolean() &&
+                        itemBuffer.isVariable())
+                    {
+                        Boolean boolTerm2 = (Boolean)itemBuffer.data;
+                        if (opType == HighCTokenLibrary.EQUAL) { value = value == boolTerm2; }
+                        else if (opType == HighCTokenLibrary.NOT_EQUAL) { value = value != boolTerm2; }
 
-                    Console.WriteLine(currentToken + " <relational expression> -> <boolean expression><equality op><boolean expression>" + " -> " + value);
+                        Console.WriteLine(currentToken + " <relational expression> -> <boolean expression><equality op><boolean expression>" + " -> " + value);
 
-                    return true;
+                        return true;
+                    }
+                    else
+                    {
+                        error("Boolean: Unknown Error.");
+                        return false;
+                    }
                 }
                 else
                 {
@@ -1582,7 +1594,7 @@ namespace HighCInterpreterCore
         }
 
 
-        private Boolean HC_boolean_factor(ref Boolean value)
+        private Boolean HC_boolean_factor(ref Boolean value, HighCData foundBoolean = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_boolean_factor"); }
             int storeToken = currentToken;
@@ -1595,13 +1607,29 @@ namespace HighCInterpreterCore
             <rel – expr>
             <bool – func call>
              */
-             
-            if (matchTerminal(HighCTokenLibrary.TILDE) &&
-                HC_boolean_factor(ref value))
+
+            if(foundBoolean!=null)
             {
-                value = !value;
-                Console.WriteLine(currentToken + " <boolean factor> -> ~<boolean factor>" + " -> " + value);
-                return true;
+               value = (Boolean)(foundBoolean.data);
+               return true;
+            }
+
+            HighCData itemBuffer;
+            if (matchTerminal(HighCTokenLibrary.TILDE) )
+            {
+                if (HC_expression(out itemBuffer) &&
+                   itemBuffer.isBoolean() &&
+                   itemBuffer.isVariable())
+                {
+                    value = !((Boolean)(itemBuffer.data));
+                    Console.WriteLine(currentToken + " <boolean factor> -> ~<boolean factor>" + " -> " + value);
+                    return true;
+                }
+                else
+                {
+                    error("The "+HighCTokenLibrary.TILDE+" operator only works with <"+HighCTokenLibrary.BOOLEAN+"> values.");
+                    return false;
+                }
             }
 
             currentToken = storeToken;
@@ -1638,22 +1666,33 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            /*
+            
             currentToken = storeToken;
-            if (HC_relational_expression(ref value))
+            itemBuffer = null;
+            List<String> newBanList = new List<String>{HighCTokenLibrary.BOOLEAN};
+            if(HC_expression(out itemBuffer, newBanList))
             {
-                Console.WriteLine(currentToken + " <boolean factor> -> <relational expression>" + " -> " + value);
-                return true;
+                if(itemBuffer.isBoolean() &&
+                itemBuffer.isVariable())
+                {
+                    value = (Boolean)itemBuffer.data;
+                    Console.WriteLine(currentToken + " <boolean factor> -> <relational expression>" + " -> " + value);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            */
+
             return false;
         }
         
-        private Boolean HC_boolean_term(ref Boolean value)
+        private Boolean HC_boolean_term(ref Boolean value, HighCData foundBoolean = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_boolean_term"); }
 
-            if (HC_boolean_factor(ref value) &&
+            if (HC_boolean_factor(ref value, foundBoolean) &&
                 HC_boolean_term_helper(ref value))
             {
                 Console.WriteLine(currentToken + " <boolean term> -> <boolean factor><boolean term'>" + " -> " + value);
@@ -2573,7 +2612,7 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_discrete_expression(out HighCData value)
+        private Boolean HC_discrete_expression(out HighCData value, List<String> doNotCheckTypes = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_discrete_expression"); }
             int storeToken = currentToken;
@@ -2582,15 +2621,7 @@ namespace HighCInterpreterCore
             Boolean boolTerm = false;
             String stringBuffer = "";
             value = null;
-
-            if (HC_boolean_expression(ref boolTerm) == true)
-            {
-                value = new HighCData(HighCTokenLibrary.BOOLEAN, boolTerm);
-                Console.WriteLine(currentToken + " <discrete expression> -> <boolean expression>" + " -> " + value);
-                return true;
-            }
-
-            currentToken = storeToken;
+            
             if (HC_character_expression(out stringBuffer) == true)
             {
                 value = new HighCData(HighCTokenLibrary.CHARACTER, stringBuffer);
@@ -2647,6 +2678,18 @@ namespace HighCInterpreterCore
                 {
                     currentToken = storeToken;
                     Console.WriteLine(currentToken + " <discrete expression> -> <enum expression>" + " -> " + value.ToString());
+                    return true;
+                }
+            }
+
+            if (doNotCheckTypes == null ||
+                doNotCheckTypes.Contains(HighCTokenLibrary.BOOLEAN) == false)
+            {
+                currentToken = storeToken;
+                if (HC_boolean_expression(ref boolTerm) == true)
+                {
+                    value = new HighCData(HighCTokenLibrary.BOOLEAN, boolTerm);
+                    Console.WriteLine(currentToken + " <discrete expression> -> <boolean expression>" + " -> " + value);
                     return true;
                 }
             }
@@ -3288,7 +3331,7 @@ namespace HighCInterpreterCore
             return false;
         }
         
-        private Boolean HC_expression(out HighCData value)
+        private Boolean HC_expression(out HighCData value, List<String> doNotCheckTypes=null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_expression"); }
             int storeToken = currentToken;
@@ -3300,36 +3343,29 @@ namespace HighCInterpreterCore
             <list – expr>
             <scalar – expr>
              */
-
+            
             if(matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS))
             {
-                if (HC_expression(out value))
+                if (HC_expression(out value, doNotCheckTypes))
                 {
                     if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true))
                     {
                         Console.WriteLine(currentToken + " <expression> -> ( <expression> )");
+                        /*
                         if(value.isBoolean())
                         {
                             storeToken = currentToken;
-                            Boolean boolTerm = (Boolean)value.data;
-                            if(HC_boolean_expression_helper(ref boolTerm))
+                            Boolean boolTerm=false;
+                            if(HC_boolean_expression(ref boolTerm, value))
                             {
                                 value.setValue(boolTerm);
                             }
                             else
                             {
                                 currentToken = storeToken;
-                                boolTerm = (Boolean)value.data;
-                                if (HC_boolean_term_helper(ref boolTerm))
-                                {
-                                    value.setValue(boolTerm);
-                                }
-                                else
-                                {
-                                    currentToken = storeToken;
-                                }
                             }
                         }
+                        */
                         return true;
                     }
                     else
@@ -3378,7 +3414,7 @@ namespace HighCInterpreterCore
             }
 
             currentToken = storeToken;
-            if (HC_scalar_expression(out value))
+            if (HC_scalar_expression(out value, doNotCheckTypes))
             {
                 Console.WriteLine(currentToken + " <expression> -> <scalar expression>");
                 return true;
@@ -4243,6 +4279,12 @@ namespace HighCInterpreterCore
                     variable.type.memoryType = HighCType.ARRAY_SUBTYPE;
                     variable.type.dataType = expectedType.dataType;
                     Boolean floatFound = false;
+
+                    if(variableSubtype.Count > maxArrayDimensions)
+                    {
+                        error("Array Declaration: Arrays are limited to at most " + maxArrayDimensions + " dimensions, attempted declaration with " + variableSubtype.Count + " dimensions.");
+                        return false;
+                    }
 
                     if (constantValue.isArray())
                     {
@@ -6276,7 +6318,7 @@ namespace HighCInterpreterCore
                 else if (term.isCharacter())
                 {
                     String stringTerm;
-                    if (HC_character_expression(out stringTerm))
+                    if (HC_string_expression(out stringTerm))
                     {
                         term2 = new HighCData(HighCType.STRING_TYPE, stringTerm);
 
@@ -6552,7 +6594,7 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_scalar_expression(out HighCData value)
+        private Boolean HC_scalar_expression(out HighCData value, List<String> doNotCheckTypes = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_scalar_expression"); }
             int storeToken = currentToken;
@@ -6590,7 +6632,7 @@ namespace HighCInterpreterCore
             }
             
             currentToken = storeToken;
-            if (HC_discrete_expression(out value))
+            if (HC_discrete_expression(out value, doNotCheckTypes))
             {
                 Console.WriteLine(currentToken + " <scalar expression> -> <discrete expression>" + " -> " + value.ToString());
                 return true;
@@ -6615,61 +6657,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-
-            /*
             
-
-
-            currentToken = storeToken;
-            if (HC_character_expression(out stringTerm) == true)
-            {
-                value = new HighCData(HighCTokenLibrary.STRING, stringTerm);
-
-                storeToken = currentToken;
-                if (HC_relational_expression(value, out boolTerm))
-                {
-                    value = new HighCData(HighCType.BOOLEAN_TYPE, boolTerm);
-                    Console.WriteLine(currentToken + " <scalar expression> -> <character expression><relational op><character expression>" + " -> " + value.ToString());
-                    return true;
-                }
-                else
-                {
-                    currentToken = storeToken;
-                    Console.WriteLine(currentToken + " <scalar expression> -> <character expression>" + " -> " + value.ToString());
-                    return true;
-                }
-            }
-
-            currentToken = storeToken;
-            HighCEnumeration enumBuffer;
-            if (HC_enumeration_expression(out enumBuffer) == true)
-            {
-
-                value = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.ENUMERATION_INSTANCE, enumBuffer.type), enumBuffer);
-
-                storeToken = currentToken;
-                if (HC_relational_expression(value, out boolTerm))
-                {
-                    value = new HighCData(HighCType.BOOLEAN_TYPE, boolTerm);
-                    Console.WriteLine(currentToken + " <scalar expression> -> <enum expression><relational op><character expression>" + " -> " + value.ToString());
-                    return true;
-                }
-                else
-                {
-                    currentToken = storeToken;
-                    Console.WriteLine(currentToken + " <scalar expression> -> <enum expression>" + " -> " + value.ToString());
-                    return true;
-                }
-            }
-
-            currentToken = storeToken;
-            if (HC_boolean_expression(ref boolTerm) == true)
-            {
-                value = new HighCData(HighCTokenLibrary.BOOLEAN, boolTerm);
-                Console.WriteLine(currentToken + " <scalar expression> -> <boolean expression>" + " -> " + value.ToString());
-                return true;
-            }
-            */
             value = null;
             return false;
         }
@@ -8217,7 +8205,36 @@ namespace HighCInterpreterCore
                     return false;
                 }
                 
-                int order = String.Compare(stringTerm1, stringTerm2);
+                int order = 0;
+                int i = 0;
+                while(i<stringTerm1.Length && i<stringTerm2.Length)
+                {
+                    if(stringTerm1[i]!=stringTerm2[i])
+                    {
+                        if(stringTerm1[i]>stringTerm2[i])
+                        {
+                            order = 1;
+                        }
+                        else
+                        {
+                            order = -1;
+                        }
+                        break;
+                    }
+                    i++;
+                }
+
+                if(order==0)
+                {
+                    if(stringTerm1.Length>stringTerm2.Length)
+                    {
+                        order = 1;
+                    }
+                    else if(stringTerm1.Length < stringTerm2.Length)
+                    {
+                        order = -1;
+                    }
+                }
 
                 if (opType == HighCTokenLibrary.EQUAL) { value = order == 0; }
                 else if (opType == HighCTokenLibrary.NOT_EQUAL) { value = order != 0; }
@@ -8242,8 +8259,6 @@ namespace HighCInterpreterCore
                     errorCode = ERROR_TYPE_MISMATCH;
                     return false;
                 }
-
-                int order = String.Compare(stringTerm1, stringTerm2);
                 
                 if(stringTerm2.Length==0)
                 {
