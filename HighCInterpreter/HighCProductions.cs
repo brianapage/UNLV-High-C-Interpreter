@@ -72,7 +72,7 @@ namespace HighCInterpreterCore
             {
                 if (addTokenPosition == true)
                 {
-                    newEntry = "(L" + tokenList[currentToken - 1].Line + ", C" + tokenList[currentToken - 1].Column + "): " + newEntry+Environment.NewLine;
+                    newEntry = "(L" + tokenList[currentToken - 1].Line + ", C" + tokenList[currentToken - 1].Column + "): " + newEntry + Environment.NewLine;
                 }
 
                 if (debugList.Contains(newEntry) == false)
@@ -102,7 +102,7 @@ namespace HighCInterpreterCore
             else if (outputToken == true)
             {
                 currentToken++;
-                addDebugInfo("Expected to find: \"" + token + "\" but found \"" + tokenList[currentToken - 1].Text + "\" instead." );
+                addDebugInfo("Expected to find: \"" + token + "\" but found \"" + tokenList[currentToken - 1].Text + "\" instead.");
                 currentToken--;
                 Console.WriteLine("  Current Token: " + tokenList[currentToken].Text + " " + tokenList[currentToken].Type);
             }
@@ -158,7 +158,7 @@ namespace HighCInterpreterCore
             Boolean matchFound = false;
             String stringBuffer = "";
             labelsUsed = new List<String>();
-            
+
             /*
              * on ( <label list> ) <block>
              */
@@ -189,13 +189,13 @@ namespace HighCInterpreterCore
 
                 if (foundLabel == false)
                 {
-                    addDebugInfo(HighCTokenLibrary.ON + ": at least one element was expected." );
+                    addDebugInfo(HighCTokenLibrary.ON + ": at least one element was expected.");
                     return false;
                 }
 
                 if (needAnother == true)
                 {
-                    addDebugInfo(HighCTokenLibrary.ON + ": another element was expected after the comma." );
+                    addDebugInfo(HighCTokenLibrary.ON + ": another element was expected after the comma.");
                     return false;
                 }
 
@@ -206,7 +206,7 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private void error(String errorMessage="")
+        private void error(String errorMessage = "")
         {
             if (errorMessage != "")
             {
@@ -273,7 +273,7 @@ namespace HighCInterpreterCore
         private Boolean HC_arithmetic_expression_with_integer_tracking(ref HighCData value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_arithmetic_expression_with_integer_tracking" + " -> " + value); }
-            
+
             if (HC_arithmetic_term(ref value) &&
                HC_arithmetic_expression_helper(ref value))
             {
@@ -388,7 +388,7 @@ namespace HighCInterpreterCore
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_arithmetic_factor_helper"); }
             int storeToken = currentToken;
-            HighCData term1 = new HighCData(HighCTokenLibrary.INTEGER,0);
+            HighCData term1 = new HighCData(HighCTokenLibrary.INTEGER, 0);
 
             if (matchTerminal(HighCTokenLibrary.CARET) &&
                 HC_arithmetic_primary(ref term1))
@@ -402,16 +402,16 @@ namespace HighCInterpreterCore
                 else if (value.isInteger() &&
                          term1.isFloat())
                 {
-                    value.data = Math.Pow((Int64)value.data , (Double)term1.data);
+                    value.data = Math.Pow((Int64)value.data, (Double)term1.data);
                     value.type = new HighCType(HighCType.FLOAT_TYPE);
                 }
                 else if (value.isFloat() &&
                          term1.isInteger())
                 {
-                    value.data = Math.Pow((Double)value.data , (Int64)term1.data);
+                    value.data = Math.Pow((Double)value.data, (Int64)term1.data);
                     value.type = new HighCType(HighCType.FLOAT_TYPE);
                 }
-                else if((Int64)term1.data < 0)
+                else if ((Int64)term1.data < 0)
                 {
                     value.data = Math.Pow((Int64)value.data, (Int64)term1.data);
                     value.type = new HighCType(HighCType.FLOAT_TYPE);
@@ -421,7 +421,7 @@ namespace HighCInterpreterCore
                     value.data = Math.Pow((Int64)value.data, (Int64)term1.data);
                     value.type = new HighCType(HighCType.INTEGER_TYPE);
                 }
-                
+
                 Console.WriteLine(currentToken + " <arithmetic factor'> -> ^ <arithmetic primary>" + " -> " + value);
 
                 if (HC_arithmetic_factor_helper(ref value))
@@ -457,11 +457,11 @@ namespace HighCInterpreterCore
             {
                 if (addOp == HighCTokenLibrary.MINUS_SIGN)
                 {
-                    if(value.isInteger())
+                    if (value.isInteger())
                     {
                         value.data = ((Int64)value.data) * -1;
                     }
-                    else if(value.isFloat())
+                    else if (value.isFloat())
                     {
                         value.data = ((Double)value.data) * -1;
                     }
@@ -524,7 +524,7 @@ namespace HighCInterpreterCore
             HighCData data;
             if (HC_function_call(out data, new HighCType(HighCType.INTEGER_TYPE)))
             {
-                value = new HighCData(HighCType.INTEGER_TYPE,(Int64)data.data);
+                value = new HighCData(HighCType.INTEGER_TYPE, (Int64)data.data);
                 Console.WriteLine(currentToken + " <arithmetic primary> -> <integer function call>" + " -> " + value);
                 return true;
             }
@@ -581,7 +581,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <arithmetic primary> -> Match(<string expression>,<string expression>)" + " -> " + value);
                 return true;
             }
-            
+
             return false;
         }
 
@@ -600,7 +600,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <arithmetic term>-><arithmetic factor><arithmetic term'>" + " -> " + value);
                 return true;
             }
-            
+
             return false;
         }
 
@@ -666,12 +666,12 @@ namespace HighCInterpreterCore
                         value.data = (Double)((Int64)value.data) / (Double)((Int64)term1.data);
                         value.type = new HighCType(HighCType.FLOAT_TYPE);
                     }
-                    
+
                     Console.WriteLine(currentToken + " <arithmetic term'> -> / <arithmetic term'>" + " -> " + value);
                 }
                 else if (multOp == HighCTokenLibrary.PERCENT_SIGN)
                 {
-                    if (value.isInteger() && 
+                    if (value.isInteger() &&
                         term1.isInteger())
                     {
                         value.data = (Int64)value.data % (Int64)term1.data;
@@ -679,7 +679,7 @@ namespace HighCInterpreterCore
                     }
                     else
                     {
-                        error("While performing a modulus operation one or more operands were not integer values." );
+                        error("While performing a modulus operation one or more operands were not integer values.");
                         return false;
                     }
                 }
@@ -712,11 +712,11 @@ namespace HighCInterpreterCore
             //Array <subscript>* ( <element – constant> )
             if (matchTerminal(HighCTokenLibrary.ARRAY))
             {
-                int dimensionSize=0;
+                int dimensionSize = 0;
                 List<int> dimensions = new List<int>();
                 storeToken = currentToken;
-                HighCData constantValue; 
-                while(HC_subscript(out dimensionSize))
+                HighCData constantValue;
+                while (HC_subscript(out dimensionSize))
                 {
                     storeToken = currentToken;
                     dimensions.Add(dimensionSize);
@@ -729,7 +729,7 @@ namespace HighCInterpreterCore
                     return false;
                 }
 
-                if(HC_element_constant(out constantValue)==false)
+                if (HC_element_constant(out constantValue) == false)
                 {
                     error();
                     return false;
@@ -742,29 +742,29 @@ namespace HighCInterpreterCore
                 }
 
                 //The left hand array will fill itself with this value
-                if(dimensions.Count==0)
+                if (dimensions.Count == 0)
                 {
                     HighCData[] array = new HighCData[1];
                     array[0] = constantValue;
-                    
+
                     HighCArray newArray = new HighCArray(array, dimensions, true);
 
                     value = new HighCData(new HighCType(HighCType.ARRAY_SUBTYPE, constantValue.type.dataType, constantValue.type.objectReference), newArray);
 
-                    Console.WriteLine(currentToken + " <array constant> -> Array (element - constant) -> "+value);
+                    Console.WriteLine(currentToken + " <array constant> -> Array (element - constant) -> " + value);
                     return true;
                 }
                 else
                 {
                     int size = 1;
-                    foreach(int dimSize in dimensions)
+                    foreach (int dimSize in dimensions)
                     {
                         size = size * dimSize;
                     }
 
                     HighCData[] array = new HighCData[size];
                     int i = 0;
-                    while(i< array.Length)
+                    while (i < array.Length)
                     {
                         array[i] = constantValue.getVariableOfType();
                         array[i].setData(constantValue);
@@ -806,15 +806,15 @@ namespace HighCInterpreterCore
                     dimensionCounters[i] = 0;
                     i++;
                 }
-                                
+
                 List<HighCData> arrayBuffer = new List<HighCData>();
                 currentDimension--;
                 HighCData itemBuffer;
 
                 //Shows which tokens are allowable at the next step
-                Boolean expectElement = true, 
-                        expectComma = false, 
-                        expectLeft = false, 
+                Boolean expectElement = true,
+                        expectComma = false,
+                        expectLeft = false,
                         expectRight = false,
                         stillLooking = true;
 
@@ -823,9 +823,9 @@ namespace HighCInterpreterCore
                 {
                     //If no valid token is found, this indicates a syntax error
                     stillLooking = true;
-                    
+
                     currentToken = storeToken;
-                    if(expectElement && HC_element_expression(out itemBuffer))
+                    if (expectElement && HC_element_expression(out itemBuffer))
                     {
                         arrayBuffer.Add(itemBuffer);
                         dimensionCounters[currentDimension]++;
@@ -838,11 +838,11 @@ namespace HighCInterpreterCore
                     }
 
                     currentToken = storeToken;
-                    if(stillLooking && expectComma && matchTerminal(HighCTokenLibrary.COMMA))
+                    if (stillLooking && expectComma && matchTerminal(HighCTokenLibrary.COMMA))
                     {
                         storeToken = currentToken;
                         stillLooking = false;
-                        if(currentDimension+1==dimensionCounters.Length)
+                        if (currentDimension + 1 == dimensionCounters.Length)
                         {
                             expectElement = true;
                             expectLeft = false;
@@ -857,12 +857,12 @@ namespace HighCInterpreterCore
                     }
 
                     currentToken = storeToken;
-                    if(stillLooking && expectLeft && matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                    if (stillLooking && expectLeft && matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
                     {
                         storeToken = currentToken;
                         stillLooking = false;
                         currentDimension++;
-                        if(currentDimension + 1 == dimensionCounters.Length)
+                        if (currentDimension + 1 == dimensionCounters.Length)
                         {
                             expectElement = true;
                         }
@@ -875,23 +875,23 @@ namespace HighCInterpreterCore
                     }
 
                     currentToken = storeToken;
-                    if(stillLooking && expectRight && matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET))
+                    if (stillLooking && expectRight && matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET))
                     {
                         storeToken = currentToken;
                         stillLooking = false;
 
-                        if(dimensionLengths[currentDimension]==0)
+                        if (dimensionLengths[currentDimension] == 0)
                         {
                             dimensionLengths[currentDimension] = dimensionCounters[currentDimension];
                         }
-                        else if(dimensionCounters[currentDimension]!=dimensionLengths[currentDimension])
+                        else if (dimensionCounters[currentDimension] != dimensionLengths[currentDimension])
                         {
-                            error("Array Constant: Ambiguous dimension size found for dimension "+(currentDimension+1)+", expected "+ dimensionLengths[currentDimension]+ " but found "+ dimensionCounters[currentDimension]+" instead.");
+                            error("Array Constant: Ambiguous dimension size found for dimension " + (currentDimension + 1) + ", expected " + dimensionLengths[currentDimension] + " but found " + dimensionCounters[currentDimension] + " instead.");
                             return false;
                         }
                         dimensionCounters[currentDimension] = 0;
                         currentDimension--;
-                        if(currentDimension>-1)
+                        if (currentDimension > -1)
                         {
                             dimensionCounters[currentDimension]++;
                         }
@@ -901,19 +901,19 @@ namespace HighCInterpreterCore
                         expectLeft = false;
                     }
 
-                    if(stillLooking)
+                    if (stillLooking)
                     {
                         String errorMessage = "Array Constant: Was expecting one of the following:";
-                        if(expectLeft==true)
+                        if (expectLeft == true)
                         {
                             errorMessage += " a comma";
-                            if(expectElement==true || expectLeft==true || expectRight==true)
+                            if (expectElement == true || expectLeft == true || expectRight == true)
                             {
                                 errorMessage += ",";
                             }
                         }
 
-                        if(expectElement==true)
+                        if (expectElement == true)
                         {
                             errorMessage += " an element";
                             if (expectLeft == true || expectRight == true)
@@ -937,9 +937,9 @@ namespace HighCInterpreterCore
                         return false;
                     }
                 }
-                
+
                 HighCData[] array = arrayBuffer.ToArray();
-                
+
                 HighCArray newArray = new HighCArray(array, dimensionLengths.ToList<int>());
 
                 value = new HighCData(new HighCType(HighCType.ARRAY_SUBTYPE, array[0].type.dataType, array[0].type.objectReference), newArray);
@@ -950,7 +950,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_array_expression(out HighCData array)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_array_expression"); }
@@ -964,15 +964,15 @@ namespace HighCInterpreterCore
             Array <subscript – expr>* ( <element – expr> )
             { <nested – element list> }
              */
-            
-            if(HC_array_constant(out array))
+
+            if (HC_array_constant(out array))
             {
-                Console.WriteLine(currentToken + " <array expression> -> <array constant> -> "+array);
+                Console.WriteLine(currentToken + " <array expression> -> <array constant> -> " + array);
                 return true;
             }
 
             currentToken = storeToken;
-            if(HC_array_variable(out array))
+            if (HC_array_variable(out array))
             {
                 Console.WriteLine(currentToken + " <array expression> -> <array variable> -> " + array);
                 return true;
@@ -984,7 +984,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <array expression> -> <array function call> -> " + array);
                 return true;
             }
-            
+
             return false;
         }
 
@@ -1011,7 +1011,7 @@ namespace HighCInterpreterCore
                 }
                 else if (temp.isArray())
                 {
-                    
+
                     value = temp;
                     Console.WriteLine(currentToken + " <array variable> -> <id> -> " + identifier + " " + value);
                     return true;
@@ -1029,7 +1029,7 @@ namespace HighCInterpreterCore
             HighCData foundItem = null;
             HighCData firstItem = null;
             Boolean isListSlice = false;
-            int index=0, length=0;
+            int index = 0, length = 0;
             int arraySliceIndex = 0;
             int arraySliceLength = 0;
             String identifier = "";
@@ -1037,22 +1037,22 @@ namespace HighCInterpreterCore
             set <variable> = <expr>
              */
 
-            if(matchTerminal(HighCTokenLibrary.SET))
+            if (matchTerminal(HighCTokenLibrary.SET))
             {
-                if(HC_variable(out identifier))
+                if (HC_variable(out identifier))
                 {
                     if (pureStatus == true)
                     {
                         HighCData globalItem = globalEnvironment.getItem(identifier);
                         HighCData localItem = currentEnvironment.getItem(identifier);
-                        if (globalItem==localItem &&
-                            localItem!=null)
+                        if (globalItem == localItem &&
+                            localItem != null)
                         {
-                            error(HighCTokenLibrary.SET + ": Global scope data cannot be altered by a pure function." );
+                            error(HighCTokenLibrary.SET + ": Global scope data cannot be altered by a pure function.");
                             return false;
                         }
                     }
-                    
+
                     List<int> dimensions = new List<int>();
                     if (currentEnvironment.contains(identifier))
                     {
@@ -1067,7 +1067,7 @@ namespace HighCInterpreterCore
                                 if (HC_slice(out index, out length))
                                 {
                                     isListSlice = true;
-                                    if(firstItem.getCount()==0)
+                                    if (firstItem.getCount() == 0)
                                     {
                                         error("List Variable: Empty lists cannot be accessed in this way.");
                                         return false;
@@ -1090,10 +1090,10 @@ namespace HighCInterpreterCore
                             }
                         }
                         //Checking for Array Subscripts and/or a Slice
-                        else if(firstItem.isArray())
+                        else if (firstItem.isArray())
                         {
                             int nextSubscript = 0;
-                            while(HC_subscript(out nextSubscript))
+                            while (HC_subscript(out nextSubscript))
                             {
                                 storeToken = currentToken;
                                 dimensions.Add(nextSubscript);
@@ -1105,7 +1105,7 @@ namespace HighCInterpreterCore
                                 if (HC_slice(out arraySliceIndex, out arraySliceLength))
                                 {
                                     storeToken = currentToken;
-                                    if(matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET,true)==false)
+                                    if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
                                     {
                                         error();
                                         return false;
@@ -1134,11 +1134,11 @@ namespace HighCInterpreterCore
                         }
                     }
 
-                    if (matchTerminal(HighCTokenLibrary.EQUAL,true))
+                    if (matchTerminal(HighCTokenLibrary.EQUAL, true))
                     {
-                        if(HC_expression(out value))
+                        if (HC_expression(out value))
                         {
-                            if(isListSlice == true)
+                            if (isListSlice == true)
                             {
                                 if (value.isList())
                                 {
@@ -1203,33 +1203,33 @@ namespace HighCInterpreterCore
                                     }
                                 }
                             }
-                            else if(arraySliceLength!=0)
+                            else if (arraySliceLength != 0)
                             {
                                 HighCArray array = (HighCArray)firstItem.data;
 
-                                if(dimensions.Count+1!=array.dimensions.Count)
+                                if (dimensions.Count + 1 != array.dimensions.Count)
                                 {
-                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected "+array.dimensions.Count+" dimensions specified, found "+ (dimensions.Count + 1)+".");
+                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected " + array.dimensions.Count + " dimensions specified, found " + (dimensions.Count + 1) + ".");
                                     return false;
                                 }
 
                                 int i = 0;
-                                while(i<dimensions.Count)
+                                while (i < dimensions.Count)
                                 {
-                                    if(dimensions[i] > array.dimensions[i])
+                                    if (dimensions[i] > array.dimensions[i])
                                     {
-                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Dimension index #"+(i+1)+" can be at most "+array.dimensions[i]+".");
+                                        error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Dimension index #" + (i + 1) + " can be at most " + array.dimensions[i] + ".");
                                         return false;
                                     }
                                     i++;
                                 }
 
-                                if(arraySliceIndex-1+arraySliceLength>array.dimensions[i])
+                                if (arraySliceIndex - 1 + arraySliceLength > array.dimensions[i])
                                 {
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Dimension index #" + (i + 1) + " can be at most " + array.dimensions[i] + ".");
                                     return false;
                                 }
-                                
+
                                 if (value.isVariable())
                                 {
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Slices can only be assigned lists or single dimension arrays.");
@@ -1351,7 +1351,7 @@ namespace HighCInterpreterCore
                                 }*/
 
                             }
-                            else if(dimensions.Count>0)
+                            else if (dimensions.Count > 0)
                             {
                                 HighCArray array = (HighCArray)firstItem.data;
                                 List<int> nextIndex = new List<int>();
@@ -1362,7 +1362,7 @@ namespace HighCInterpreterCore
 
                                 if (dimensions.Count != array.dimensions.Count)
                                 {
-                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected " + array.dimensions.Count + " dimensions specified, found " + dimensions.Count +".");
+                                    error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Expected " + array.dimensions.Count + " dimensions specified, found " + dimensions.Count + ".");
                                     return false;
                                 }
 
@@ -1376,7 +1376,7 @@ namespace HighCInterpreterCore
                                     }
                                     i++;
                                 }
-                                
+
                                 if (array.getItemAt(nextIndex).setData(value) == false)
                                 {
                                     if (array.getItemAt(nextIndex).errorCode == HighCData.ERROR_CONSTANT_CHANGED)
@@ -1413,11 +1413,11 @@ namespace HighCInterpreterCore
                                 {
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): Array dimensions do not match.");
                                 }
-                                else if(foundItem.errorCode == HighCData.ERROR_CONSTANT_CHANGED)
+                                else if (foundItem.errorCode == HighCData.ERROR_CONSTANT_CHANGED)
                                 {
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The specified identifier is a constant which cannot be changed after declaration.");
                                 }
-                                else if(foundItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
+                                else if (foundItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                 {
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable cannot be initialized with a value of type <" + value.type + ">, was expecting a <" + foundItem.type + ">.");
                                 }
@@ -1426,25 +1426,184 @@ namespace HighCInterpreterCore
                                     error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): This variable must be initialized with a value between " + (foundItem.type.minimum) + " and " + (foundItem.type.maximum) + ".");
                                 }
                                 else
-                                { 
-                                    error(HighCTokenLibrary.SET + ": The specified variable could not be altered due to a type mismatch: expected <"+foundItem.type+"> but given <"+value.type+">." );
+                                {
+                                    error(HighCTokenLibrary.SET + ": The specified variable could not be altered due to a type mismatch: expected <" + foundItem.type + "> but given <" + value.type + ">.");
                                 }
                                 return false;
                             }
                         }
                         else
                         {
-                            error(HighCTokenLibrary.SET + ": An expression was expected after the equal sign." );
+                            error(HighCTokenLibrary.SET + ": An expression was expected after the equal sign.");
                         }
                     }
                 }
                 else
                 {
-                    error(HighCTokenLibrary.SET + ": An identifier name was expected." );
+                    error(HighCTokenLibrary.SET + ": An identifier name was expected.");
                 }
             }
 
             return false;
+        }
+
+        private Boolean HC_body(
+            out List<HighCDataField> privateDataFields,
+            out List<HighCDataField> publicDataFields,
+            out List<HighCMethodDeclaration> privateMethods,
+            out List<HighCMethodDeclaration> publicMethods)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_body"); }
+            int storeToken = currentToken;
+            privateDataFields = new List<HighCDataField>();
+            publicDataFields = new List<HighCDataField>();
+            privateMethods = new List<HighCMethodDeclaration>();
+            publicMethods = new List<HighCMethodDeclaration>();
+            /*
+            private { <data field>* <method>* } public { <data field>* <method>* }
+             */
+
+            if (matchTerminal(HighCTokenLibrary.PRIVATE, true) == false ||
+                matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET, true) == false)
+            {
+                error();
+                return false;
+            }
+
+            storeToken = currentToken;
+            List<HighCDataField> newDataFields;
+            while (HC_data_field(out newDataFields))
+            {
+                foreach (HighCDataField nextField in newDataFields)
+                {
+                    foreach(HighCDataField existingField in privateDataFields)
+                    {
+                        if (nextField.id==existingField.id)
+                        {
+                            error("Class Declaration: The identifier \""+ nextField.id + "\" has already been declared in this scope and cannot be reused.");
+                            return false;
+                        }
+                    }
+                    privateDataFields.Add(nextField);
+                }
+                storeToken = currentToken;
+            }
+            currentToken = storeToken;
+
+            HighCMethodDeclaration newMethod;
+            while (HC_method(out newMethod))
+            {
+                foreach (HighCDataField existingField in privateDataFields)
+                {
+                    if (newMethod.identifier == existingField.id)
+                    {
+                        error("Class Declaration: The identifier \"" + newMethod.identifier + "\" has already been declared in this scope and cannot be reused.");
+                        return false;
+                    }
+                }
+                foreach (HighCMethodDeclaration existingField in privateMethods)
+                {
+                    if (newMethod.identifier == existingField.identifier)
+                    {
+                        error("Class Declaration: The identifier \"" + newMethod.identifier + "\" has already been declared in this scope and cannot be reused.");
+                        return false;
+                    }
+                }
+                privateMethods.Add(newMethod);
+                storeToken = currentToken;
+            }
+            currentToken = storeToken;
+
+            if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET, true) == false ||
+                matchTerminal(HighCTokenLibrary.PUBLIC, true) == false ||
+                matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET, true) == false)
+            {
+                error();
+                return false;
+            }
+
+            storeToken = currentToken;
+            while (HC_data_field(out newDataFields))
+            {
+                foreach (HighCDataField nextField in newDataFields)
+                {
+                    foreach (HighCDataField existingField in privateDataFields)
+                    {
+                        if (nextField.id == existingField.id)
+                        {
+                            error("Class Declaration: The identifier \"" + nextField.id + "\" has already been declared in this scope and cannot be reused.");
+                            return false;
+                        }
+                    }
+                    foreach (HighCDataField existingField in publicDataFields)
+                    {
+                        if (nextField.id == existingField.id)
+                        {
+                            error("Class Declaration: The identifier \"" + nextField.id + "\" has already been declared in this scope and cannot be reused.");
+                            return false;
+                        }
+                    }
+                    foreach (HighCMethodDeclaration existingField in privateMethods)
+                    {
+                        if (nextField.id == existingField.identifier)
+                        {
+                            error("Class Declaration: The identifier \"" + nextField.id + "\" has already been declared in this scope and cannot be reused.");
+                            return false;
+                        }
+                    }
+                    publicDataFields.Add(nextField);
+                }
+                storeToken = currentToken;
+            }
+            currentToken = storeToken;
+
+            while (HC_method(out newMethod))
+            {
+                foreach (HighCDataField existingField in privateDataFields)
+                {
+                    if (newMethod.identifier == existingField.id)
+                    {
+                        error("Class Declaration: The identifier \"" + newMethod.identifier + "\" has already been declared in this scope and cannot be reused.");
+                        return false;
+                    }
+                }
+                foreach (HighCDataField existingField in publicDataFields)
+                {
+                    if (newMethod.identifier == existingField.id)
+                    {
+                        error("Class Declaration: The identifier \"" + newMethod.identifier + "\" has already been declared in this scope and cannot be reused.");
+                        return false;
+                    }
+                }
+                foreach (HighCMethodDeclaration existingField in privateMethods)
+                {
+                    if (newMethod.identifier == existingField.identifier)
+                    {
+                        error("Class Declaration: The identifier \"" + newMethod.identifier + "\" has already been declared in this scope and cannot be reused.");
+                        return false;
+                    }
+                }
+                foreach (HighCMethodDeclaration existingField in publicMethods)
+                {
+                    if (newMethod.identifier == existingField.identifier)
+                    {
+                        error("Class Declaration: The identifier \"" + newMethod.identifier + "\" has already been declared in this scope and cannot be reused.");
+                        return false;
+                    }
+                }
+                publicMethods.Add(newMethod);
+                storeToken = currentToken;
+            }
+            currentToken = storeToken;
+
+            if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET, true) == false)
+            {
+                error();
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <body> -> private { <data field>* <method>* } public { <data field>* <method>* } -> ");
+            return true;
         }
 
         private Boolean HC_block(HighCEnvironment newEnvironment = null)
@@ -1458,7 +1617,7 @@ namespace HighCInterpreterCore
             }
 
             HighCEnvironment storeEnvironment = currentEnvironment;
-            if (newEnvironment==null)
+            if (newEnvironment == null)
             {
                 currentEnvironment = new HighCEnvironment(storeEnvironment);
             }
@@ -1481,13 +1640,13 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <block> -> <statement>");
             }
             currentToken = storeToken;
-            
-            if(returnFlag==true)
+
+            if (returnFlag == true)
             {
                 Console.WriteLine(currentToken + " <block> -> Ending early due to return statement.");
                 return true;
             }
-            
+
             if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET, true) && stopProgram == false)
             {
                 Console.WriteLine(currentToken + " <block>");
@@ -1521,7 +1680,7 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_boolean_expression(ref Boolean value, HighCData foundBoolean=null)
+        private Boolean HC_boolean_expression(ref Boolean value, HighCData foundBoolean = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_boolean_expression"); }
             value = false;
@@ -1608,14 +1767,14 @@ namespace HighCInterpreterCore
             <bool – func call>
              */
 
-            if(foundBoolean!=null)
+            if (foundBoolean != null)
             {
-               value = (Boolean)(foundBoolean.data);
-               return true;
+                value = (Boolean)(foundBoolean.data);
+                return true;
             }
 
             HighCData itemBuffer;
-            if (matchTerminal(HighCTokenLibrary.TILDE) )
+            if (matchTerminal(HighCTokenLibrary.TILDE))
             {
                 if (HC_expression(out itemBuffer) &&
                    itemBuffer.isBoolean() &&
@@ -1627,7 +1786,7 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    error("The "+HighCTokenLibrary.TILDE+" operator only works with <"+HighCTokenLibrary.BOOLEAN+"> values.");
+                    error("The " + HighCTokenLibrary.TILDE + " operator only works with <" + HighCTokenLibrary.BOOLEAN + "> values.");
                     return false;
                 }
             }
@@ -1666,13 +1825,13 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             currentToken = storeToken;
             itemBuffer = null;
-            List<String> newBanList = new List<String>{HighCTokenLibrary.BOOLEAN};
-            if(HC_expression(out itemBuffer, newBanList))
+            List<String> newBanList = new List<String> { HighCTokenLibrary.BOOLEAN };
+            if (HC_expression(out itemBuffer, newBanList))
             {
-                if(itemBuffer.isBoolean() &&
+                if (itemBuffer.isBoolean() &&
                 itemBuffer.isVariable())
                 {
                     value = (Boolean)itemBuffer.data;
@@ -1687,7 +1846,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_boolean_term(ref Boolean value, HighCData foundBoolean = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_boolean_term"); }
@@ -1744,12 +1903,12 @@ namespace HighCInterpreterCore
 
                 if (temp == null)
                 {
-                    error("Boolean Variable: The specified variable \"" + identifier + "\" could not be found." );
+                    error("Boolean Variable: The specified variable \"" + identifier + "\" could not be found.");
                     return false;
                 }
-                else if(temp.readable == false)
+                else if (temp.readable == false)
                 {
-                    error("Boolean Variable: The specified variable \"" + identifier + "\" cannot be referenced." );
+                    error("Boolean Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
                     return false;
                 }
                 else if (temp.isBoolean())
@@ -1768,14 +1927,14 @@ namespace HighCInterpreterCore
                                     return false;
                                 }
 
-                                if(index+length-1>temp.getCount())
+                                if (index + length - 1 > temp.getCount())
                                 {
                                     error("Boolean List: The slice is not a subset of the list.");
                                     return false;
                                 }
 
-                                value = (Boolean)((List<HighCData>)(temp.data))[index-1].data;
-                                Console.WriteLine(currentToken + " <boolean variable> -> <id>@<slice> -> " + identifier + "@"+index+" "+ value);
+                                value = (Boolean)((List<HighCData>)(temp.data))[index - 1].data;
+                                Console.WriteLine(currentToken + " <boolean variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
                                 return true;
                             }
                             else
@@ -1820,7 +1979,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -1835,7 +1994,7 @@ namespace HighCInterpreterCore
             Boolean atLeastOneMatchFound = false;
             String stringBuffer = "";
             labelsUsed = new List<string>();
-            
+
             /*
              * on ( <label list> ) <block>
              */
@@ -1868,13 +2027,13 @@ namespace HighCInterpreterCore
 
                 if (foundLabel == false)
                 {
-                    addDebugInfo(HighCTokenLibrary.ON + ": at least one element was expected." );
+                    addDebugInfo(HighCTokenLibrary.ON + ": at least one element was expected.");
                     return false;
                 }
 
                 if (needAnother == true)
                 {
-                    addDebugInfo(HighCTokenLibrary.ON + ": another element was expected after the comma." );
+                    addDebugInfo(HighCTokenLibrary.ON + ": another element was expected after the comma.");
                     return false;
                 }
 
@@ -1987,7 +2146,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_character_variable(out String value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_character_variable"); }
@@ -2001,12 +2160,12 @@ namespace HighCInterpreterCore
 
                 if (temp == null)
                 {
-                    error("Character Variable: The specified variable \"" + identifier + "\" could not be found." );
+                    error("Character Variable: The specified variable \"" + identifier + "\" could not be found.");
                     return false;
                 }
                 else if (temp.readable == false)
                 {
-                    error("Character Variable: The specified variable \"" + identifier + "\" cannot be referenced." );
+                    error("Character Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
                     return false;
                 }
                 else if (temp.isCharacter())
@@ -2076,10 +2235,10 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             return false;
         }
-        
+
         private Boolean HC_choice()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_choice"); }
@@ -2111,7 +2270,7 @@ namespace HighCInterpreterCore
                             {
                                 if (labelsUsed.Contains(label))
                                 {
-                                    addDebugInfo(HighCTokenLibrary.CHOICE + ": Each condition must be unique. \"" + label + "\" is used more than once." );
+                                    addDebugInfo(HighCTokenLibrary.CHOICE + ": Each condition must be unique. \"" + label + "\" is used more than once.");
                                     return false;
                                 }
                                 else
@@ -2129,7 +2288,7 @@ namespace HighCInterpreterCore
                             {
                                 if (labelsUsed.Contains(label))
                                 {
-                                    addDebugInfo(HighCTokenLibrary.CHOICE + ": Each condition must be unique. \"" + label + "\" is used more than once." );
+                                    addDebugInfo(HighCTokenLibrary.CHOICE + ": Each condition must be unique. \"" + label + "\" is used more than once.");
                                     return false;
                                 }
                                 else
@@ -2144,7 +2303,7 @@ namespace HighCInterpreterCore
                         {
                             if (labelsUsed.Count > 2)
                             {
-                                addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions cannot overlap." );
+                                addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions cannot overlap.");
                                 return false;
                             }
                         }
@@ -2156,14 +2315,14 @@ namespace HighCInterpreterCore
                             String previousLabel = "";
                             foreach (String label in labelsUsed)
                             {
-                                if(label.Contains("..."))
+                                if (label.Contains("..."))
                                 {
                                     Int64 firstValue = Int64.Parse(label.Substring(0, label.IndexOf("...")));
-                                    Int64 secondValue = Int64.Parse(label.Substring(label.IndexOf("...")+3));
+                                    Int64 secondValue = Int64.Parse(label.Substring(label.IndexOf("...") + 3));
 
-                                    if(firstValue >= secondValue)
+                                    if (firstValue >= secondValue)
                                     {
-                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": "+ firstValue + " must be less than " + secondValue+ ".");
+                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": " + firstValue + " must be less than " + secondValue + ".");
                                         return false;
                                     }
 
@@ -2173,14 +2332,14 @@ namespace HighCInterpreterCore
                                         firstListItem = false;
                                         previousLabel = label;
                                     }
-                                    else if(currentValue<firstValue)
+                                    else if (currentValue < firstValue)
                                     {
                                         currentValue = secondValue;
                                         previousLabel = label;
                                     }
                                     else
                                     {
-                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\""+previousLabel+"\") and (\""+label+"\") cannot overlap." );
+                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap.");
                                         return false;
                                     }
                                 }
@@ -2194,14 +2353,14 @@ namespace HighCInterpreterCore
                                         firstListItem = false;
                                         previousLabel = label;
                                     }
-                                    else if(currentValue < firstValue)
+                                    else if (currentValue < firstValue)
                                     {
                                         currentValue = firstValue;
                                         previousLabel = label;
                                     }
                                     else
                                     {
-                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap." );
+                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap.");
                                         return false;
                                     }
                                 }
@@ -2222,7 +2381,7 @@ namespace HighCInterpreterCore
 
                                     if (firstValue >= secondValue)
                                     {
-                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": " + firstValue + " must be less than " + secondValue + "." );
+                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": " + firstValue + " must be less than " + secondValue + ".");
                                         return false;
                                     }
 
@@ -2237,7 +2396,7 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap." );
+                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap.");
                                         return false;
                                     }
                                 }
@@ -2256,7 +2415,7 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap." );
+                                        addDebugInfo(HighCTokenLibrary.CHOICE + ": Conditions (\"" + previousLabel + "\") and (\"" + label + "\") cannot overlap.");
                                         return false;
                                     }
                                 }
@@ -2289,9 +2448,148 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    addDebugInfo(HighCTokenLibrary.CHOICE + ": A discrete (boolean, character, enumeration, or integer) expression was expected inside the parenthesis." );
+                    addDebugInfo(HighCTokenLibrary.CHOICE + ": A discrete (boolean, character, enumeration, or integer) expression was expected inside the parenthesis.");
                 }
             }
+
+            return false;
+        }
+
+        private Boolean HC_class()
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_class"); }
+            int storeToken = currentToken;
+            String qualifier, id, parentName;
+            //<qualifier> class <id> <type parameters> <parent> <body>
+
+            if (HC_qualifier(out qualifier)) { } //should always be true
+
+            if (matchTerminal(HighCTokenLibrary.CLASS) == false)
+            {
+                if (qualifier != "")
+                {
+                    error("Class Declaration: Expected the keyword \"" + HighCTokenLibrary.CLASS + "\" after the qualifier " + qualifier);
+                }
+                return false;
+            }
+
+            if (HC_id(out id) == false)
+            {
+                error("Class Declaration: Expected an identifier after the keyword \"" + HighCTokenLibrary.CLASS + "\".");
+                return false;
+            }
+            if (globalEnvironment.contains(id))
+            {
+                error("Class Declaration: The identifier \"" + id + "\" is already in use and cannot be reused for this class.");
+                return false;
+            }
+
+            if (HC_type_parameters() == false) { } //currently unimplemented
+
+            HighCData parent=null;
+            if (HC_parent(out parentName) == false)
+            {
+                //errors handled by hc_parent
+                //Link back to parent class
+                return false;
+            }
+
+            if (parentName != "")
+            {
+                if (globalEnvironment.contains(parentName))
+                {
+                    parent = globalEnvironment.getItem(parentName);
+                    if (parent.isClassType() == false)
+                    {
+                        error("Class Declaration: The provided super class identifier \"" + parentName + "\" is not a class.");
+                        return false;
+                    }
+                    if(((HighCClassType)(parent.data)).parent.qualifier==HighCClassType.QUALIFIER_FINAL)
+                    {
+                        error("Class Declaration: The provided super class \"" + parentName + "\" is "+ HighCClassType.QUALIFIER_FINAL + " and may not be used as a parent.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    error("Class Declaration: The provided super class identifier \"" + parentName + "\" could not be found.");
+                    return false;
+                }
+            }
+            List<HighCDataField> privateDataFields;
+            List<HighCDataField> publicDataFields;
+            List<HighCMethodDeclaration> privateMethods;
+            List<HighCMethodDeclaration> publicMethods;
+            if (HC_body(
+                out privateDataFields,
+                out publicDataFields,
+                out privateMethods,
+                out publicMethods) == false)
+            {
+                return false;
+            }
+
+            HighCClassType newClass = new HighCClassType(
+                id,
+                qualifier,
+                parent,
+                privateDataFields,
+                publicDataFields,
+                privateMethods,
+                publicMethods);
+
+            HighCType classDefinition = new HighCType(
+                HighCType.VARIABLE_SUBTYPE,
+                HighCType.CLASS_TYPE,
+                newClass);
+
+            HighCData newClassData = new HighCData(classDefinition, newClass);
+
+            globalEnvironment.addNewItem(id,newClassData);
+
+            Console.WriteLine(currentToken + "<class> -> <qualifier> class <id> <type parameters> <parent> <body> -> " + newClassData);
+            return true;
+        }
+
+        private Boolean HC_class_name(out String className)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_class_name"); }
+            className = "";
+            int storeToken = currentToken;
+
+            /*
+            <class id>
+            <generic class id> < <type list> >
+             */
+
+            if (HC_id(out className))
+            {
+                if(globalEnvironment.contains(className)==false)
+                {
+                    return false;
+                }
+                HighCData classData = globalEnvironment.getItem(className);
+                if(classData.isClassType())
+                {
+                    Console.WriteLine(currentToken + " <class name> -> <class id>" + " -> " + className);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private Boolean HC_compiler_directive()
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_compiler_directive"); }
+            int storeToken = currentToken;
+
+            /*
+            Proposed Compiler Directives:
+            <error − checks>
+            <debugging aid>
+            <file merge>
+             */
 
             return false;
         }
@@ -2308,8 +2606,8 @@ namespace HighCInterpreterCore
                 <list – constant>
                 <scalar – constant>
              */
-             
-            if(HC_scalar_constant(out value))
+
+            if (HC_scalar_constant(out value))
             {
                 Console.WriteLine(currentToken + " <constant> -> <scalar constant>" + " -> " + value);
                 return true;
@@ -2317,11 +2615,11 @@ namespace HighCInterpreterCore
 
             currentToken = storeToken;
             List<HighCData> values;
-            if(HC_list_constant(out values))
+            if (HC_list_constant(out values))
             {
-                if(values.Count > 0)
+                if (values.Count > 0)
                 {
-                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, values[0].type.dataType,values[0].type.objectReference), values);
+                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, values[0].type.dataType, values[0].type.objectReference), values);
                 }
                 else
                 {
@@ -2332,11 +2630,28 @@ namespace HighCInterpreterCore
             }
 
             currentToken = storeToken;
-            if(HC_array_constant(out value))
+            if (HC_array_constant(out value))
             {
                 Console.WriteLine(currentToken + " <constant> -> <array constant>" + " -> " + value);
                 return true;
             }
+
+            currentToken = storeToken;
+            if(HC_object_constant(out values))
+            {
+                if (values.Count > 0)
+                {
+                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, values[0].type.dataType, values[0].type.objectReference), values);
+                }
+                else
+                {
+                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, null), values);
+                }
+
+                Console.WriteLine(currentToken + " <constant> -> <object constant>" + " -> " + value);
+                return true;
+            }
+
             return false;
         }
 
@@ -2407,13 +2722,61 @@ namespace HighCInterpreterCore
             return false;
         }
 
+        private Boolean HC_data_field(out List<HighCDataField> dataFields)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_datafield"); }
+            int storeToken = currentToken;
+            dataFields = new List<HighCDataField>();
+            /*
+             <option> <type> <var list>
+            */
+
+            String option;
+            if (HC_option(out option)) { } //Will always return true
+
+            HighCType type;
+            if (HC_type(out type) == false)
+            {
+                //Cannot declare an error here as the current line may be a method declaration
+                return false;
+            }
+
+            String id;
+            List<int> memoryType;
+            if (HC_var(out id, out memoryType))
+            {
+                dataFields.Add(new HighCDataField(option, id, type, memoryType));
+                storeToken = currentToken;
+
+                while (matchTerminal(HighCTokenLibrary.COMMA))
+                {
+                    if (HC_var(out id, out memoryType) == false)
+                    {
+                        error("Class Data Field Declaration: Expected another identifier after the comma.");
+                        return false;
+                    }
+                    dataFields.Add(new HighCDataField(option, id, type, memoryType));
+                    storeToken = currentToken;
+                }
+                currentToken = storeToken;
+            }
+            else
+            {
+                error("Class Data Field Declaration: Expected an identifier after the type <" + type.ToString() + ">.");
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <data field> -> <option> <type> <var list> -> " + option + " " + type + " IDs: " + dataFields.Count);
+            return true;
+        }
+
         private Boolean HC_declaration()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_declaration"); }
             int storeToken = currentToken;
             /*
-             * create <type> <initiated – var list>
-                multi <class name> <initiated – var list>  Likely will not be implemented in this version
+             create <type> <initiated – var list>
+             multi <class name> <initiated – var list>  Likely will not be implemented in this version
              */
             Boolean atLeastOneFound = false;
             Boolean needAnother = false;
@@ -2430,14 +2793,14 @@ namespace HighCInterpreterCore
                         storeToken = currentToken;
                         atLeastOneFound = true;
                         needAnother = false;
-                        
+
                         if (type.dataType == HighCTokenLibrary.INTEGER &&
                             type2.dataType == HighCTokenLibrary.FLOAT)
                         {
-                            error("Variable Declaration" + ": The type of the variable (\"" + type2 + "\") does not match the type indicated (\"" + type + "\")." );
+                            error("Variable Declaration" + ": The type of the variable (\"" + type2 + "\") does not match the type indicated (\"" + type + "\").");
                             return false;
                         }
-                        
+
                         //Match types
 
                         if (matchTerminal(HighCTokenLibrary.COMMA))
@@ -2453,13 +2816,13 @@ namespace HighCInterpreterCore
 
                     if (needAnother == true)
                     {
-                        error("Variable Declaration" + ": another element was expected after the comma." );
+                        error("Variable Declaration" + ": another element was expected after the comma.");
                         return false;
                     }
 
                     if (atLeastOneFound == false)
                     {
-                        error("Variable Declaration" + ": at least one declaration (\"<identifier> = <value>\") was expected after the type." );
+                        error("Variable Declaration" + ": at least one declaration (\"<identifier> = <value>\") was expected after the type.");
                         return false;
                     }
 
@@ -2469,7 +2832,7 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    error(HighCTokenLibrary.CREATE + ": Expected a data or class type." );
+                    error(HighCTokenLibrary.CREATE + ": Expected a data or class type.");
                 }
             }
 
@@ -2485,7 +2848,7 @@ namespace HighCInterpreterCore
             inrev
              */
 
-            if(matchTerminal(HighCTokenLibrary.IN))
+            if (matchTerminal(HighCTokenLibrary.IN))
             {
                 direction = true;
                 Console.WriteLine(currentToken + " <dir>" + " -> " + HighCTokenLibrary.IN);
@@ -2560,7 +2923,7 @@ namespace HighCInterpreterCore
             Console.WriteLine(currentToken + " <direction>" + " -> null");
             return true;
         }
-        
+
         private Boolean HC_discrete_constant(out HighCData value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_discrete_constant"); }
@@ -2604,7 +2967,7 @@ namespace HighCInterpreterCore
             HighCEnumeration enumeration;
             if (HC_enumeration_constant(out enumeration))
             {
-                value = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,HighCType.ENUMERATION_INSTANCE,enumeration.type), enumeration);
+                value = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.ENUMERATION_INSTANCE, enumeration.type), enumeration);
                 Console.WriteLine(currentToken + " <discrete constant> -> <enum constant>" + " -> " + value);
                 return true;
             }
@@ -2616,12 +2979,12 @@ namespace HighCInterpreterCore
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_discrete_expression"); }
             int storeToken = currentToken;
-            
+
             Int64 term1 = 0;
             Boolean boolTerm = false;
             String stringBuffer = "";
             value = null;
-            
+
             if (HC_character_expression(out stringBuffer) == true)
             {
                 value = new HighCData(HighCTokenLibrary.CHARACTER, stringBuffer);
@@ -2719,7 +3082,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <discrete type> -> " + type);
                 return true;
             }
-            
+
             Int64 intTerm1 = 0;
             Int64 intTerm2 = 0;
             currentToken = storeToken;
@@ -2730,7 +3093,7 @@ namespace HighCInterpreterCore
                 {
                     if (HC_integer_constant(out intTerm1) == false)
                     {
-                        error(HighCTokenLibrary.INTEGER+": Expected an integer constant to follow the colon to indicate the lower bound of the variable." );
+                        error(HighCTokenLibrary.INTEGER + ": Expected an integer constant to follow the colon to indicate the lower bound of the variable.");
                         return false;
                     }
                     if (matchTerminal(HighCTokenLibrary.ELLIPSES, true) == false)
@@ -2740,10 +3103,10 @@ namespace HighCInterpreterCore
                     }
                     if (HC_integer_constant(out intTerm2) == false)
                     {
-                        error(HighCTokenLibrary.INTEGER+": Expected an integer constant to follow the colon to indicate the upper bound of the variable." );
+                        error(HighCTokenLibrary.INTEGER + ": Expected an integer constant to follow the colon to indicate the upper bound of the variable.");
                         return false;
                     }
-                    
+
                     if (intTerm1 <= intTerm2)
                     {
                         type = new HighCType(HighCType.VARIABLE_SUBTYPE,
@@ -2751,12 +3114,12 @@ namespace HighCInterpreterCore
                                             null,
                                             new HighCData(HighCType.INTEGER_TYPE, intTerm1),
                                             new HighCData(HighCType.INTEGER_TYPE, intTerm2));
-                        Console.WriteLine(currentToken + " <discrete type> -> " + type + ": "+intTerm1+HighCTokenLibrary.ELLIPSES+intTerm2);
+                        Console.WriteLine(currentToken + " <discrete type> -> " + type + ": " + intTerm1 + HighCTokenLibrary.ELLIPSES + intTerm2);
                         return true;
                     }
                     else
                     {
-                        error(HighCTokenLibrary.INTEGER+": The second range specification must be greater than or equal to the first." );
+                        error(HighCTokenLibrary.INTEGER + ": The second range specification must be greater than or equal to the first.");
                         return false;
                     }
                 }
@@ -2768,7 +3131,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             String charBuffer1 = "";
             String charBuffer2 = "";
             currentToken = storeToken;
@@ -2779,7 +3142,7 @@ namespace HighCInterpreterCore
                 {
                     if (HC_character_constant(out charBuffer1) == false)
                     {
-                        error(HighCTokenLibrary.CHARACTER + ": Expected a character constant to follow the colon to indicate the lower bound of the variable." );
+                        error(HighCTokenLibrary.CHARACTER + ": Expected a character constant to follow the colon to indicate the lower bound of the variable.");
                         return false;
                     }
                     if (matchTerminal(HighCTokenLibrary.ELLIPSES, true) == false)
@@ -2789,7 +3152,7 @@ namespace HighCInterpreterCore
                     }
                     if (HC_character_constant(out charBuffer2) == false)
                     {
-                        error(HighCTokenLibrary.CHARACTER + ": Expected a character constant to follow the colon to indicate the upper bound of the variable." );
+                        error(HighCTokenLibrary.CHARACTER + ": Expected a character constant to follow the colon to indicate the upper bound of the variable.");
                         return false;
                     }
 
@@ -2800,13 +3163,13 @@ namespace HighCInterpreterCore
                                             null,
                                             new HighCData(HighCType.CHARACTER_TYPE, (String)("" + charBuffer1[0])),
                                             new HighCData(HighCType.CHARACTER_TYPE, (String)("" + charBuffer2[0])));
-                        
+
                         Console.WriteLine(currentToken + " <discrete type> -> " + type);
                         return true;
                     }
                     else
                     {
-                        error(HighCTokenLibrary.CHARACTER + ": The second range specification must be greater than or equal to the first." );
+                        error(HighCTokenLibrary.CHARACTER + ": The second range specification must be greater than or equal to the first.");
                         return false;
                     }
                 }
@@ -2830,7 +3193,7 @@ namespace HighCInterpreterCore
                 {
                     if (HC_enumeration_constant(out enumBuffer1) == false)
                     {
-                        error(HighCTokenLibrary.ENUMERATION + ": Expected an enumeration constant to follow the colon to indicate the lower bound of the variable." );
+                        error(HighCTokenLibrary.ENUMERATION + ": Expected an enumeration constant to follow the colon to indicate the lower bound of the variable.");
                         return false;
                     }
                     if (matchTerminal(HighCTokenLibrary.ELLIPSES, true) == false)
@@ -2840,7 +3203,7 @@ namespace HighCInterpreterCore
                     }
                     if (HC_enumeration_constant(out enumBuffer2) == false)
                     {
-                        error(HighCTokenLibrary.ENUMERATION + ": Expected an enumeration constant to follow the colon to indicate the upper bound of the variable." );
+                        error(HighCTokenLibrary.ENUMERATION + ": Expected an enumeration constant to follow the colon to indicate the upper bound of the variable.");
                         return false;
                     }
 
@@ -2850,33 +3213,33 @@ namespace HighCInterpreterCore
                         {
                             if (enumBuffer1.rank <= enumBuffer2.rank)
                             {
-                                type = new HighCType(HighCType.VARIABLE_SUBTYPE, 
-                                                    HighCType.ENUMERATION_INSTANCE, 
+                                type = new HighCType(HighCType.VARIABLE_SUBTYPE,
+                                                    HighCType.ENUMERATION_INSTANCE,
                                                     enumType,
                                                     new HighCData(HighCType.ENUMERATION_INSTANCE, enumBuffer1),
                                                     new HighCData(HighCType.ENUMERATION_INSTANCE, enumBuffer2));
-                                
+
                                 Console.WriteLine(currentToken + " <discrete type> -> " + type);
                                 return true;
                             }
                             else
                             {
-                                error(HighCTokenLibrary.ENUMERATION + ": The second range specification must be greater than or equal to the first." );
+                                error(HighCTokenLibrary.ENUMERATION + ": The second range specification must be greater than or equal to the first.");
                                 return false;
                             }
                         }
                         else
                         {
-                            error(HighCTokenLibrary.ENUMERATION + ": The upper range specification does not match the type of <" + enumType.identifier + ">." );
+                            error(HighCTokenLibrary.ENUMERATION + ": The upper range specification does not match the type of <" + enumType.identifier + ">.");
                             return false;
                         }
                     }
                     else
                     {
-                        error(HighCTokenLibrary.ENUMERATION + ": The lower range specification does not match the type of <"+enumType.identifier+">." );
+                        error(HighCTokenLibrary.ENUMERATION + ": The lower range specification does not match the type of <" + enumType.identifier + ">.");
                         return false;
                     }
-                    
+
                 }
                 else
                 {
@@ -2886,7 +3249,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -2907,7 +3270,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_element_expression(out HighCData value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_element_expression"); }
@@ -2918,15 +3281,15 @@ namespace HighCInterpreterCore
             <scalar – expr>
             <object – expr>
              */
-            
-            if(HC_scalar_expression(out value))
+
+            if (HC_scalar_expression(out value))
             {
                 Console.WriteLine(currentToken + " <element - expr> -> <scalar - expr> ->" + value);
                 return true;
             }
 
             currentToken = storeToken;
-            if(HC_object_expression(out value))
+            if (HC_object_expression(out value))
             {
                 Console.WriteLine(currentToken + " <element - expr> -> <object - expr> ->" + value);
                 return true;
@@ -2946,13 +3309,13 @@ namespace HighCInterpreterCore
              */
 
             HighCData newItem;
-            if(HC_element_expression(out newItem))
+            if (HC_element_expression(out newItem))
             {
                 List<HighCData> newList = new List<HighCData>();
                 newList.Add(newItem);
-                
-                value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, 
-                                                    newItem.type.dataType, 
+
+                value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE,
+                                                    newItem.type.dataType,
                                                     newItem.type.objectReference),
                                       newList);
                 Console.WriteLine(currentToken + " <element or list> -> <element expression> ->" + value);
@@ -2960,7 +3323,7 @@ namespace HighCInterpreterCore
             }
 
             currentToken = storeToken;
-            if(HC_list_expression(out value))
+            if (HC_list_expression(out value))
             {
                 Console.WriteLine(currentToken + " <element or list> -> <list expression> ->" + value);
                 return true;
@@ -3026,23 +3389,23 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                error(elseifStyle + ": Must be followed by a block. Example: \"" + HighCTokenLibrary.LEFT_CURLY_BRACKET + " " + HighCTokenLibrary.RIGHT_CURLY_BRACKET + "\"." );
+                                error(elseifStyle + ": Must be followed by a block. Example: \"" + HighCTokenLibrary.LEFT_CURLY_BRACKET + " " + HighCTokenLibrary.RIGHT_CURLY_BRACKET + "\".");
                             }
                         }
                         else { error(); return false; }
                     }
                     else
                     {
-                        error(elseifStyle + ": A boolean expression was expected inside the parenthesis." );
+                        error(elseifStyle + ": A boolean expression was expected inside the parenthesis.");
                     }
                 }
-                else{ error(); return false; }
+                else { error(); return false; }
             }
 
             Console.WriteLine(currentToken + " <else if> -> Null");
             return false;
         }
-        
+
         private Boolean HC_enumeration_constant(out HighCEnumeration value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_enumeration_constant"); }
@@ -3053,15 +3416,15 @@ namespace HighCInterpreterCore
             /*
             <id>
              */
-             
+
             String stringBuffer;
 
             if (HC_id(out stringBuffer))
             {
-                if(globalEnvironment.contains(stringBuffer))
+                if (globalEnvironment.contains(stringBuffer))
                 {
                     HighCData itemBuffer = globalEnvironment.getItem(stringBuffer);
-                    if(itemBuffer.isEnumeration() &&
+                    if (itemBuffer.isEnumeration() &&
                        itemBuffer.isVariable())
                     {
                         value = (HighCEnumeration)itemBuffer.data;
@@ -3089,29 +3452,29 @@ namespace HighCInterpreterCore
 
             if (HC_enumeration_variable(out value))
             {
-                Console.WriteLine(currentToken + " <enum expression> -> <enum – variable> ->"+value);
+                Console.WriteLine(currentToken + " <enum expression> -> <enum – variable> ->" + value);
                 return true;
             }
 
             currentToken = storeToken;
-            if(HC_enumeration_constant(out value))
+            if (HC_enumeration_constant(out value))
             {
                 Console.WriteLine(currentToken + " <enum expression> -> <enum – constant> ->" + value);
                 return true;
             }
 
             currentToken = storeToken;
-            if(matchTerminal(HighCTokenLibrary.NEXT))
+            if (matchTerminal(HighCTokenLibrary.NEXT))
             {
-                if(matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS,true))
+                if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true))
                 {
                     if (HC_enumeration_expression(out value))
                     {
                         if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true))
                         {
                             HighCEnumeration enumBuffer = value.type.getNext(value.identifier);
-                            
-                            if(enumBuffer != null)
+
+                            if (enumBuffer != null)
                             {
                                 value = enumBuffer;
                                 Console.WriteLine(currentToken + " Next(<enum expression>) -> <enum expression> ->" + value);
@@ -3119,7 +3482,7 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                error("Next(Enumeration Constant): The enumeration constant \""+value.identifier+"\" does not have a higher value.");
+                                error("Next(Enumeration Constant): The enumeration constant \"" + value.identifier + "\" does not have a higher value.");
                                 return false;
                             }
                         }
@@ -3156,7 +3519,7 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                error("Prev(Enumeration Constant): The enumeration constant \"" + value.identifier + "\" does not have a lower value." );
+                                error("Prev(Enumeration Constant): The enumeration constant \"" + value.identifier + "\" does not have a lower value.");
                                 return false;
                             }
                         }
@@ -3185,7 +3548,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_enumeration_type(out HighCEnumerationType value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_ENUMERATION_TYPE"); }
@@ -3330,8 +3693,8 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
-        private Boolean HC_expression(out HighCData value, List<String> doNotCheckTypes=null)
+
+        private Boolean HC_expression(out HighCData value, List<String> doNotCheckTypes = null)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_expression"); }
             int storeToken = currentToken;
@@ -3343,8 +3706,8 @@ namespace HighCInterpreterCore
             <list – expr>
             <scalar – expr>
              */
-            
-            if(matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS))
+
+            if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS))
             {
                 if (HC_expression(out value, doNotCheckTypes))
                 {
@@ -3376,12 +3739,12 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    addDebugInfo("Expression: An expression was expected inside the parenthesis." );
+                    addDebugInfo("Expression: An expression was expected inside the parenthesis.");
                 }
             }
 
             currentToken = storeToken;
-            if(HC_object_expression(out value))
+            if (HC_object_expression(out value))
             {
                 Console.WriteLine(currentToken + " <expression> -> <object expression>");
                 return true;
@@ -3434,7 +3797,7 @@ namespace HighCInterpreterCore
             <sign>.<digit><digit>* <exponent>
              */
             if (HC_sign(out sign))
-            { 
+            {
                 if (matchTerminal(HighCTokenLibrary.FLOAT_LITERAL))
                 {
                     Double.TryParse(tokenList[currentToken - 1].Text, out value);
@@ -3474,7 +3837,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-                
+
         private Boolean HC_float_variable(out Double value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_float_variable"); }
@@ -3489,12 +3852,12 @@ namespace HighCInterpreterCore
 
                 if (temp == null)
                 {
-                    error("Float Variable: The specified variable \"" + identifier + "\" could not be found." );
+                    error("Float Variable: The specified variable \"" + identifier + "\" could not be found.");
                     return false;
                 }
                 else if (temp.readable == false)
                 {
-                    error("Float Variable: The specified variable \"" + identifier + "\" cannot be referenced." );
+                    error("Float Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
                     return false;
                 }
                 else if (temp.isFloat())
@@ -3567,7 +3930,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_formal_parameters(out List<HighCParameter> parameters)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_formal_parameters"); }
@@ -3577,7 +3940,7 @@ namespace HighCInterpreterCore
             ε
             <parameter list>
              */
-             
+
             HighCParameter currentParameter;
             parameters = new List<HighCParameter>();
 
@@ -3594,7 +3957,7 @@ namespace HighCInterpreterCore
                     }
                     else
                     {
-                        error("Function declaration: another parameter was expected after the comma." );
+                        error("Function/Method Declaration: Another parameter was expected after the comma.");
                         return false;
                     }
                 }
@@ -3624,9 +3987,9 @@ namespace HighCInterpreterCore
             if (HC_modifiers(out pure, out recursive))
             {
                 storeToken = currentToken;
-                
+
                 //This should only output an error message if a pure or recursive modifier was found
-                if((pure==true || recursive == true) && matchTerminal(HighCTokenLibrary.FUNCTION, true)==false)
+                if ((pure == true || recursive == true) && matchTerminal(HighCTokenLibrary.FUNCTION, true) == false)
                 {
                     //error
                     errorFound = true;
@@ -3637,21 +4000,21 @@ namespace HighCInterpreterCore
                 currentToken = storeToken;
                 if (matchTerminal(HighCTokenLibrary.FUNCTION))
                 {
-                    if(HC_id(out functionName))
+                    if (HC_id(out functionName))
                     {
-                        if(HC_type_parameters()) //Will not be implemented yet
+                        if (HC_type_parameters()) //Will not be implemented yet
                         {
-                            if(matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true))
+                            if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true))
                             {
-                                if(HC_formal_parameters(out parameters))
+                                if (HC_formal_parameters(out parameters))
                                 {
-                                    if(pure==true)
+                                    if (pure == true)
                                     {
-                                        foreach(HighCParameter parameter in parameters)
+                                        foreach (HighCParameter parameter in parameters)
                                         {
-                                            if(parameter.outAllowed==true)
+                                            if (parameter.outAllowed == true)
                                             {
-                                                error("Function declaration \"" + functionName + "\": Pure functions cannot have \"out\" parameters." );
+                                                error("Function declaration \"" + functionName + "\": Pure functions cannot have \"out\" parameters.");
                                                 return false;
                                             }
                                         }
@@ -3676,19 +4039,19 @@ namespace HighCInterpreterCore
                                                     }
                                                     else
                                                     {
-                                                        error("Function declaration: \"" + functionName + "\" already exists." );
+                                                        error("Function declaration: \"" + functionName + "\" already exists.");
                                                         return false;
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    error("Function declaration: \""+ functionName + "\" should be followed by a block of code (\"{ code }\")." );
+                                                    error("Function declaration: \"" + functionName + "\" should be followed by a block of code (\"{ code }\").");
                                                     return false;
                                                 }
                                             }
                                             else
                                             {
-                                                error("Function declaration: \"" + functionName + "\" should be followed by a return type or \"void\"." );
+                                                error("Function declaration: \"" + functionName + "\" should be followed by a return type or \"void\".");
                                                 return false;
                                             }
                                         }
@@ -3706,7 +4069,7 @@ namespace HighCInterpreterCore
                                 }
                                 else
                                 {
-                                    error("Function declaration \"" + functionName + "\": One or more parameters were incorrectly specified.  Parameters must start with \""+HighCTokenLibrary.IN+"\", \""+HighCTokenLibrary.OUT+"\", or \""+HighCTokenLibrary.IN_OUT+"\" followed by a type and then an identifier.");
+                                    error("Function declaration \"" + functionName + "\": One or more parameters were incorrectly specified.  Parameters must start with \"" + HighCTokenLibrary.IN + "\", \"" + HighCTokenLibrary.OUT + "\", or \"" + HighCTokenLibrary.IN_OUT + "\" followed by a type and then an identifier.");
                                     return false;
                                 }
                             }
@@ -3724,10 +4087,10 @@ namespace HighCInterpreterCore
                     }
                 }
             }
-            
+
             return false;
         }
-        
+
         private Boolean HC_function_call(out HighCData outValue, HighCType expectedReturnType)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_function_call"); }
@@ -3738,7 +4101,7 @@ namespace HighCInterpreterCore
             <func – expr> ( <expr list> )
             <func – expr> ( )
              */
-             
+
             HighCFunctionDeclaration function;
             HighCEnvironment functionEnvironment = new HighCEnvironment(globalEnvironment);
             HighCEnvironment storeEnvironment;
@@ -3749,7 +4112,7 @@ namespace HighCInterpreterCore
 
             if (HC_function_expression(out function))
             {
-                if(expectedReturnType.dataType==null)
+                if (expectedReturnType.dataType == null)
                 {
                     expectedReturnType.dataType = function.returnType.dataType;
                 }
@@ -3761,7 +4124,7 @@ namespace HighCInterpreterCore
                     //addDebugInfo("(Warning) Function \""+function.identifier+"\" did not match the expected type <"+expectedReturnType+">");
                     return false;
                 }
-                
+
                 if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true))
                 {
                     //Look for parameters
@@ -3796,13 +4159,13 @@ namespace HighCInterpreterCore
                                 }
                                 else
                                 {
-                                    error("Call: \"" + function.identifier + "\" the type of the parameter provided <" + value.type + "> does not match the expected type <" + parameter.type + ">." );
+                                    error("Call: \"" + function.identifier + "\" the type of the parameter provided <" + value.type + "> does not match the expected type <" + parameter.type + ">.");
                                     return false;
                                 }
                             }
                             else
                             {
-                                error("Call: \"" + function.identifier + "\" no value specified for parameter of type <" + parameter.type + ">." );
+                                error("Call: \"" + function.identifier + "\" no value specified for parameter of type <" + parameter.type + ">.");
                                 return false;
                             }
                         }
@@ -3825,19 +4188,19 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        error("Call \"" + function.identifier + "\": the specified identifier \"" + identifier + "\" with type <" + value.type + "> does not match the expected parameter type <" + parameter.type + ">." );
+                                        error("Call \"" + function.identifier + "\": the specified identifier \"" + identifier + "\" with type <" + value.type + "> does not match the expected parameter type <" + parameter.type + ">.");
                                         return false;
                                     }
                                 }
                                 else
                                 {
-                                    error("Call \"" + function.identifier + "\": the specified identifier \"" + identifier + "\" could not be found." );
+                                    error("Call \"" + function.identifier + "\": the specified identifier \"" + identifier + "\" could not be found.");
                                     return false;
                                 }
                             }
                             else
                             {
-                                error("Call \"" + function.identifier + "\": expected an identifier of type <" + parameter.type + "> as a parameter." );
+                                error("Call \"" + function.identifier + "\": expected an identifier of type <" + parameter.type + "> as a parameter.");
                                 return false;
                             }
                         }
@@ -3847,7 +4210,7 @@ namespace HighCInterpreterCore
                     {
                         if (nonRecursiveFunctionCalls.Contains(function))
                         {
-                            error("Call \"" + function.identifier + "\": This function is non-recursive and cannot call itself, it may require the \"" + HighCTokenLibrary.RECURSIVE + "\" modifier in its declaration." );
+                            error("Call \"" + function.identifier + "\": This function is non-recursive and cannot call itself, it may require the \"" + HighCTokenLibrary.RECURSIVE + "\" modifier in its declaration.");
                             return false;
                         }
                         else
@@ -3859,13 +4222,13 @@ namespace HighCInterpreterCore
                     if (pureStatus == true &&
                         function.isPure == false)
                     {
-                        error("Call \"" + function.identifier + "\": Impure functions cannot be called by pure functions." );
+                        error("Call \"" + function.identifier + "\": Impure functions cannot be called by pure functions.");
                         return false;
                     }
 
                     //Perform Function
                     storeToken = currentToken;
-                    if(function != null)
+                    if (function != null)
                     {
                         currentToken = function.blockTokenPosition;
                         storeEnvironment = currentEnvironment;
@@ -3900,11 +4263,11 @@ namespace HighCInterpreterCore
                         }
                         else if (returnValue == null)
                         {
-                            error("Function: \"" + function.identifier + "\" expected a return value of type <" + function.returnType + ">." );
+                            error("Function: \"" + function.identifier + "\" expected a return value of type <" + function.returnType + ">.");
                             return false;
                         }
-                        
-                        if(expectedReturnType.isVoid())
+
+                        if (expectedReturnType.isVoid())
                         {
 
                         }
@@ -3913,7 +4276,7 @@ namespace HighCInterpreterCore
                             outValue = new HighCData(function.returnType, null, true, true);
                             if (outValue.setData(returnValue) == false)
                             {
-                                error("Function: \"" + function.identifier + "\" expected a return value of type <" + function.returnType + "> but instead had a <" + returnValue.type + ">." );
+                                error("Function: \"" + function.identifier + "\" expected a return value of type <" + function.returnType + "> but instead had a <" + returnValue.type + ">.");
                                 return false;
                             }
                         }
@@ -3931,7 +4294,7 @@ namespace HighCInterpreterCore
                                 {
                                     stopProgram = true;
                                     errorFound = true;
-                                    addDebugInfo("Call: \"" + outIdentifiers[i] + "\" could not be found or is not a variable." );
+                                    addDebugInfo("Call: \"" + outIdentifiers[i] + "\" could not be found or is not a variable.");
                                     return false;
                                 }
                                 i++;
@@ -3961,7 +4324,7 @@ namespace HighCInterpreterCore
                     return false;
                 }
             }
-            
+
             return false;
         }
 
@@ -3980,15 +4343,15 @@ namespace HighCInterpreterCore
             <object – name>.<method - id>
              */
 
-            if(HC_id(out identifier))
+            if (HC_id(out identifier))
             {
-                if(currentEnvironment.contains(identifier))
+                if (currentEnvironment.contains(identifier))
                 {
                     //FUNCTION
-                    if(globalEnvironment.contains(identifier))
+                    if (globalEnvironment.contains(identifier))
                     {
-                        data=globalEnvironment.getItem(identifier);
-                        if(data.isFunction())
+                        data = globalEnvironment.getItem(identifier);
+                        if (data.isFunction())
                         {
                             function = (HighCFunctionDeclaration)data.data;
                             return true;
@@ -4026,13 +4389,13 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    addDebugInfo(HighCTokenLibrary.GLOBAL + ": Expected a declaration statement." );
+                    addDebugInfo(HighCTokenLibrary.GLOBAL + ": Expected a declaration statement.");
                 }
             }
 
             return false;
         }
-        
+
         private Boolean HC_id(out String value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_id"); }
@@ -4042,21 +4405,17 @@ namespace HighCInterpreterCore
             <letter><alphanum>*
             ?<letter><alphanum>*
              */
-             
-            if(matchTerminal(HighCTokenLibrary.IDENTIFIER))
+
+            if (matchTerminal(HighCTokenLibrary.IDENTIFIER))
             {
                 if (currentToken < tokenList.Count)
                 {
-                    value = tokenList[currentToken-1].Text;
+                    value = tokenList[currentToken - 1].Text;
                 }
-                
+
                 Console.WriteLine(currentToken + " <id> -> " + value);
 
                 return true;
-            }
-            else
-            {
-                //addDebugInfo(HighCTokenLibrary.IDENTIFIER + ": Expected an identifier beginning with a letter or question mark that does not match any reserved keywords." );
             }
 
             return false;
@@ -4098,7 +4457,7 @@ namespace HighCInterpreterCore
                     }
                     else if (skipBlock() == false)
                     {
-                        addDebugInfo(HighCTokenLibrary.IF + ": Must be followed by a block.  Example: \"" + HighCTokenLibrary.LEFT_CURLY_BRACKET + " " + HighCTokenLibrary.RIGHT_CURLY_BRACKET + "\"." );
+                        addDebugInfo(HighCTokenLibrary.IF + ": Must be followed by a block.  Example: \"" + HighCTokenLibrary.LEFT_CURLY_BRACKET + " " + HighCTokenLibrary.RIGHT_CURLY_BRACKET + "\".");
                         return false;
                     }
 
@@ -4123,14 +4482,14 @@ namespace HighCInterpreterCore
                         }
                         else if (skipBlock() == false)
                         {
-                            addDebugInfo(HighCTokenLibrary.ELSE + ": Must be followed by a block.  Example: \"" + HighCTokenLibrary.LEFT_CURLY_BRACKET + " " + HighCTokenLibrary.RIGHT_CURLY_BRACKET + "\"." );
+                            addDebugInfo(HighCTokenLibrary.ELSE + ": Must be followed by a block.  Example: \"" + HighCTokenLibrary.LEFT_CURLY_BRACKET + " " + HighCTokenLibrary.RIGHT_CURLY_BRACKET + "\".");
                             return false;
                         }
                     }
                     else
                     {
                         currentToken = storeToken;
-                        addDebugInfo(HighCTokenLibrary.IF + ": Must include an \"" + HighCTokenLibrary.ELSE + "\" as part of its declaration." );
+                        addDebugInfo(HighCTokenLibrary.IF + ": Must include an \"" + HighCTokenLibrary.ELSE + "\" as part of its declaration.");
                         return false;
                     }
 
@@ -4143,18 +4502,44 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    addDebugInfo(HighCTokenLibrary.IF + ": A boolean expression was expected inside the parenthesis." );
+                    addDebugInfo(HighCTokenLibrary.IF + ": A boolean expression was expected inside the parenthesis.");
                 }
             }
 
             return false;
+        }
+        
+        private Boolean HC_initiated_field(out HighCData constant)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_initiated_variable"); }
+            int storeToken = currentToken;
+            constant = null;
+
+            /*
+            <data – field id> = <constant>
+            */
+
+            String id;
+            if(HC_id(out id)==false) //Will check against data fields at a higher level
+            {
+                return false;
+            }
+
+            if(HC_constant(out constant)==false)
+            {
+                constant.label = id;
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <initiated field> -> <data – field id> = <constant> ->" + id + " " + constant);
+            return true;
         }
 
         private Boolean HC_initiated_variable(HighCType expectedType, out HighCType type, Boolean isConstant = false)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_initiated_variable"); }
             int storeToken = currentToken;
-            type=null;
+            type = null;
             String variableName;
             List<int> variableSubtype;
             HighCData constantValue;
@@ -4172,9 +4557,17 @@ namespace HighCInterpreterCore
                     error("Declaration: The provided identifier \"" + variableName + "\" already exists in this scope and cannot be redeclared.");
                     return false;
                 }
-                
-                HighCData variable = new HighCData(expectedType, constantValue.data, !isConstant, true);
-                
+
+                HighCType newType = new HighCType(
+                    expectedType.memoryType, 
+                    expectedType.dataType, 
+                    expectedType.objectReference);
+                newType.minimum = expectedType.minimum;
+                newType.maximum = expectedType.maximum;
+                newType.precision = expectedType.precision;
+
+                HighCData variable = new HighCData(newType, constantValue.data, !isConstant, true);
+
                 if (expectedType.isEnumeration())
                 {
                     if (constantValue.isEnumeration())
@@ -4193,7 +4586,20 @@ namespace HighCInterpreterCore
                         return false;
                     }
                 }
-                
+
+                if(expectedType.isClassType())
+                {
+                    if(((HighCClassType)expectedType.objectReference).qualifier==HighCClassType.QUALIFIER_ABSTRACT)
+                    {
+                        error("Declaration: Abstract classes are not a valid variable type.");
+                        return false;
+                    }
+
+                    //Check that all fields are initialized
+                    //Create Class Object
+                    //Add Class Object to Environment
+                }
+
                 //Variable
                 if (variableSubtype[0] == 0)
                 {
@@ -4220,7 +4626,7 @@ namespace HighCInterpreterCore
                 //List
                 if (variableSubtype[0] == -1)
                 {
-                    if(constantValue.isList()==false)
+                    if (constantValue.isList() == false)
                     {
                         error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + "@>.");
                         return false;
@@ -4228,21 +4634,21 @@ namespace HighCInterpreterCore
 
                     variable.type.memoryType = HighCType.LIST_SUBTYPE;
                     variable.type.dataType = expectedType.dataType;
-                    Boolean floatFound=false;
+                    Boolean floatFound = false;
                     List<HighCData> storeValues = new List<HighCData>();
-                    
+
                     foreach (HighCData value in (List<HighCData>)constantValue.data)
                     {
-                        HighCData newValue = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,expectedType.dataType,expectedType.objectReference), null);
+                        HighCData newValue = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, expectedType.dataType, expectedType.objectReference), null);
                         newValue.type.minimum = expectedType.minimum;
                         newValue.type.maximum = expectedType.maximum;
 
-                        if(value.isFloat())
+                        if (value.isFloat())
                         {
                             floatFound = true;
                         }
 
-                        if(newValue.setData(value)==false)
+                        if (newValue.setData(value) == false)
                         {
                             if (newValue.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                             {
@@ -4254,7 +4660,7 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                error("Unknown Error 1."+ expectedType +" ");
+                                error("Unknown Error 1." + expectedType + " ");
                             }
                             return false;
                         }
@@ -4263,7 +4669,7 @@ namespace HighCInterpreterCore
 
                     variable.data = storeValues;
                     type = variable.type;
-                    if (floatFound==true)
+                    if (floatFound == true)
                     {
                         type = new HighCType(HighCType.LIST_SUBTYPE, HighCType.FLOAT_TYPE);
                     }
@@ -4274,13 +4680,13 @@ namespace HighCInterpreterCore
                 }
 
                 //Array
-                if (variableSubtype[0]>0)
+                if (variableSubtype[0] > 0)
                 {
                     variable.type.memoryType = HighCType.ARRAY_SUBTYPE;
                     variable.type.dataType = expectedType.dataType;
                     Boolean floatFound = false;
 
-                    if(variableSubtype.Count > maxArrayDimensions)
+                    if (variableSubtype.Count > maxArrayDimensions)
                     {
                         error("Array Declaration: Arrays are limited to at most " + maxArrayDimensions + " dimensions, attempted declaration with " + variableSubtype.Count + " dimensions.");
                         return false;
@@ -4426,7 +4832,7 @@ namespace HighCInterpreterCore
 
                             variable.data = newArray;
                             currentEnvironment.addNewItem(variableName, variable);
-                            
+
                             Console.WriteLine(currentToken + " <initiated variable> -> <variable> = <constant> ->" + variableSubtype + " " + variableName + " " + variable);
                             return true;
                         }
@@ -4519,7 +4925,7 @@ namespace HighCInterpreterCore
                         }
                         else
                         {
-                            error("Declaration \"" + variableName + "\": The number of elements in the list ("+ constantValue.getCount() + ") did not match the specified array size ("+ variableSubtype[0] + ").");
+                            error("Declaration \"" + variableName + "\": The number of elements in the list (" + constantValue.getCount() + ") did not match the specified array size (" + variableSubtype[0] + ").");
                             return false;
                         }
                     }
@@ -4576,7 +4982,7 @@ namespace HighCInterpreterCore
             }
             return false;
         }
-        
+
         private Boolean HC_integer_variable(out Int64 value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_integer_variable"); }
@@ -4596,15 +5002,15 @@ namespace HighCInterpreterCore
             if (HC_id(out identifier))
             {
                 HighCData temp = currentEnvironment.getItem(identifier);
-                
-                if(temp == null)
+
+                if (temp == null)
                 {
-                    error("Integer Variable: The specified variable \"" + identifier + "\" could not be found." );
+                    error("Integer Variable: The specified variable \"" + identifier + "\" could not be found.");
                     return false;
                 }
                 else if (temp.readable == false)
                 {
-                    error("Integer Variable: The specified variable \"" + identifier + "\" cannot be referenced." );
+                    error("Integer Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
                     return false;
                 }
                 else if (temp.isInteger())
@@ -4651,14 +5057,14 @@ namespace HighCInterpreterCore
                         storeToken = currentToken;
                         int intBuffer;
                         List<int> index = new List<int>();
-                        while(HC_subscript_expression(out intBuffer))
+                        while (HC_subscript_expression(out intBuffer))
                         {
                             storeToken = currentToken;
                             index.Add(intBuffer);
                         }
                         currentToken = storeToken;
-                        
-                        if(((HighCArray)(temp.data)).indexInBounds(index))
+
+                        if (((HighCArray)(temp.data)).indexInBounds(index))
                         {
                             value = (Int64)(((HighCArray)(temp.data)).getItemAt(index).data);
                             Console.WriteLine(currentToken + " <integer variable> -> <id><subscript>* -> " + identifier + " " + value);
@@ -4672,7 +5078,7 @@ namespace HighCInterpreterCore
                     }
 
                     value = (Int64)temp.data;
-                    Console.WriteLine(currentToken + " <integer variable> -> <id> -> " + identifier+" "+ value);
+                    Console.WriteLine(currentToken + " <integer variable> -> <id> -> " + identifier + " " + value);
                     return true;
                 }
             }
@@ -4706,9 +5112,9 @@ namespace HighCInterpreterCore
                         {
                             if (HC_id(out identifier))
                             {
-                                if(globalEnvironment.contains(identifier))
+                                if (globalEnvironment.contains(identifier))
                                 {
-                                    error(HighCTokenLibrary.FOR+"@: The identifier \""+identifier+"\" cannot be reused, it is already declared in the global scope.");
+                                    error(HighCTokenLibrary.FOR + "@: The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
                                     return false;
                                 }
 
@@ -4720,21 +5126,21 @@ namespace HighCInterpreterCore
                                         if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true))
                                         {
                                             List<HighCData> items = (List<HighCData>)list.data;
-                                            if(items.Count==0)
+                                            if (items.Count == 0)
                                             {
-                                                if(skipBlock()==false)
+                                                if (skipBlock() == false)
                                                 {
-                                                    error(HighCTokenLibrary.FOR+"@: Expected a block \"{ }\".");
+                                                    error(HighCTokenLibrary.FOR + "@: Expected a block \"{ }\".");
                                                     return false;
                                                 }
                                             }
                                             else
                                             {
-                                                int i = items.Count-1;
+                                                int i = items.Count - 1;
                                                 int startOfBlock = currentToken;
                                                 int limit = -1;
                                                 int offset = -1;
-                                                if(direction==true)
+                                                if (direction == true)
                                                 {
                                                     i = 0;
                                                     limit = items.Count;
@@ -4745,30 +5151,30 @@ namespace HighCInterpreterCore
                                                     currentToken = startOfBlock;
                                                     HighCEnvironment newEnvironment = new HighCEnvironment(currentEnvironment);
                                                     HighCData newItem = new HighCData(type);
-                                                    if(newItem.setData(items[i])==false)
+                                                    if (newItem.setData(items[i]) == false)
                                                     {
                                                         if (newItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                                         {
-                                                            error(HighCTokenLibrary.FOR+"@ \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
+                                                            error(HighCTokenLibrary.FOR + "@ \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
                                                         }
                                                         else if (newItem.errorCode == HighCData.ERROR_OUT_OF_RANGE)
                                                         {
-                                                            error(HighCTokenLibrary.FOR+"@ \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
+                                                            error(HighCTokenLibrary.FOR + "@ \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
                                                         }
                                                         error();
                                                         return false;
                                                     }
                                                     newEnvironment.addNewItem(identifier, newItem);
-                                                    if(HC_block(newEnvironment)==false)
+                                                    if (HC_block(newEnvironment) == false)
                                                     {
-                                                        error(HighCTokenLibrary.FOR+"@: Expected a block \"{ }\".");
+                                                        error(HighCTokenLibrary.FOR + "@: Expected a block \"{ }\".");
                                                         return false;
                                                     }
-                                                    
-                                                    i+=offset;
+
+                                                    i += offset;
                                                 }
                                             }
-                                            
+
                                             return true;
                                         }
                                         else
@@ -4779,19 +5185,19 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        error(HighCTokenLibrary.FOR+"@: Expected a list.");
+                                        error(HighCTokenLibrary.FOR + "@: Expected a list.");
                                         return false;
                                     }
                                 }
                                 else
                                 {
-                                    error(HighCTokenLibrary.FOR+"@: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
+                                    error(HighCTokenLibrary.FOR + "@: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
                                     return false;
                                 }
                             }
                             else
                             {
-                                error(HighCTokenLibrary.FOR+"@: Expected an identifier.");
+                                error(HighCTokenLibrary.FOR + "@: Expected an identifier.");
                                 return false;
                             }
                         }
@@ -4815,7 +5221,7 @@ namespace HighCInterpreterCore
                 //for[] ( <type> <id> <dir> <array expr> ) <block>            Foreach Array
                 if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET))
                 {
-                    if(matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET,true)==false)
+                    if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
                     {
                         error();
                         return false;
@@ -4828,7 +5234,7 @@ namespace HighCInterpreterCore
                             {
                                 if (globalEnvironment.contains(identifier))
                                 {
-                                    error(HighCTokenLibrary.FOR+"[]: The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
+                                    error(HighCTokenLibrary.FOR + "[]: The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
                                     return false;
                                 }
 
@@ -4845,7 +5251,7 @@ namespace HighCInterpreterCore
                                             {
                                                 if (skipBlock() == false)
                                                 {
-                                                    error(HighCTokenLibrary.FOR+"@: Expected a block \"{ }\".");
+                                                    error(HighCTokenLibrary.FOR + "@: Expected a block \"{ }\".");
                                                     return false;
                                                 }
                                             }
@@ -4870,11 +5276,11 @@ namespace HighCInterpreterCore
                                                     {
                                                         if (newItem.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                                                         {
-                                                            error(HighCTokenLibrary.FOR+"[] \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
+                                                            error(HighCTokenLibrary.FOR + "[] \"" + identifier + "\": This variable cannot be initialized with a value of type <" + items[i].type + ">, was expecting a <" + type + ">.");
                                                         }
                                                         else if (newItem.errorCode == HighCData.ERROR_OUT_OF_RANGE)
                                                         {
-                                                            error(HighCTokenLibrary.FOR+"[] \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
+                                                            error(HighCTokenLibrary.FOR + "[] \"" + identifier + "\": This variable must be initialized with a value between " + (type.minimum) + " and " + (type.maximum) + ".");
                                                         }
                                                         error();
                                                         return false;
@@ -4882,7 +5288,7 @@ namespace HighCInterpreterCore
                                                     newEnvironment.addNewItem(identifier, newItem);
                                                     if (HC_block(newEnvironment) == false)
                                                     {
-                                                        error(HighCTokenLibrary.FOR+"[]: Expected a block \"{ }\".");
+                                                        error(HighCTokenLibrary.FOR + "[]: Expected a block \"{ }\".");
                                                         return false;
                                                     }
 
@@ -4900,19 +5306,19 @@ namespace HighCInterpreterCore
                                     }
                                     else
                                     {
-                                        error(HighCTokenLibrary.FOR+"[]: Expected an array.");
+                                        error(HighCTokenLibrary.FOR + "[]: Expected an array.");
                                         return false;
                                     }
                                 }
                                 else
                                 {
-                                    error(HighCTokenLibrary.FOR+"[]: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
+                                    error(HighCTokenLibrary.FOR + "[]: Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
                                     return false;
                                 }
                             }
                             else
                             {
-                                error(HighCTokenLibrary.FOR+"[]: Expected an identifier.");
+                                error(HighCTokenLibrary.FOR + "[]: Expected an identifier.");
                                 return false;
                             }
                         }
@@ -4932,42 +5338,42 @@ namespace HighCInterpreterCore
                 {
                     currentToken = storeToken;
                 }
-                
+
                 //for ( <discrete type> <id> <dir> <expr> … <expr> ) <block>
                 if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true))
                 {
                     if (HC_discrete_type(out type) == false)
                     {
-                        error(HighCTokenLibrary.FOR+": Expected a discrete type ("+HighCTokenLibrary.BOOLEAN+", "+HighCTokenLibrary.CHARACTER + ", " + HighCTokenLibrary.ENUMERATION + ", or "+ HighCTokenLibrary.INTEGER+").");
+                        error(HighCTokenLibrary.FOR + ": Expected a discrete type (" + HighCTokenLibrary.BOOLEAN + ", " + HighCTokenLibrary.CHARACTER + ", " + HighCTokenLibrary.ENUMERATION + ", or " + HighCTokenLibrary.INTEGER + ").");
                         return false;
                     }
 
                     if (HC_id(out identifier) == false)
                     {
-                        error(HighCTokenLibrary.FOR+": Expected an identifier.");
-                        return false;
-                    }
-                    
-                    if (globalEnvironment.contains(identifier))
-                    {
-                        error(HighCTokenLibrary.FOR+": The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
+                        error(HighCTokenLibrary.FOR + ": Expected an identifier.");
                         return false;
                     }
 
-                    if (HC_dir(out direction)==false)
+                    if (globalEnvironment.contains(identifier))
                     {
-                        error(HighCTokenLibrary.FOR+": Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
+                        error(HighCTokenLibrary.FOR + ": The identifier \"" + identifier + "\" cannot be reused, it is already declared in the global scope.");
+                        return false;
+                    }
+
+                    if (HC_dir(out direction) == false)
+                    {
+                        error(HighCTokenLibrary.FOR + ": Expected \"" + HighCTokenLibrary.IN + "\" or \"" + HighCTokenLibrary.IN_REVERSE + "\".");
                         return false;
                     }
 
                     HighCData leftExpression;
-                    if (HC_expression(out leftExpression) ==false)
+                    if (HC_expression(out leftExpression) == false)
                     {
-                        error(HighCTokenLibrary.FOR+": Expected an expression to specify the value to start at.");
+                        error(HighCTokenLibrary.FOR + ": Expected an expression to specify the value to start at.");
                         return false;
                     }
 
-                    if(matchTerminal(HighCTokenLibrary.ELLIPSES,true)==false)
+                    if (matchTerminal(HighCTokenLibrary.ELLIPSES, true) == false)
                     {
                         error();
                         return false;
@@ -4980,9 +5386,9 @@ namespace HighCInterpreterCore
                         return false;
                     }
 
-                    if(leftExpression.type.dataType!=rightExpression.type.dataType ||
-                        leftExpression.type.memoryType!=rightExpression.type.memoryType ||
-                        leftExpression.type.objectReference!=rightExpression.type.objectReference)
+                    if (leftExpression.type.dataType != rightExpression.type.dataType ||
+                        leftExpression.type.memoryType != rightExpression.type.memoryType ||
+                        leftExpression.type.objectReference != rightExpression.type.objectReference)
                     {
                         error(HighCTokenLibrary.FOR + ": The lower and upper bound must have the same type.");
                         return false;
@@ -5001,20 +5407,20 @@ namespace HighCInterpreterCore
                         type.memoryType != rightExpression.type.memoryType ||
                         type.objectReference != rightExpression.type.objectReference)
                     {
-                        error(HighCTokenLibrary.FOR + ": The upper bound must have the same type as the variable "+identifier+".");
+                        error(HighCTokenLibrary.FOR + ": The upper bound must have the same type as the variable " + identifier + ".");
                         return false;
                     }
 
                     Boolean isLeftLessThanOrEqualToRight;
                     leftExpression.compare(rightExpression, "<=", out isLeftLessThanOrEqualToRight);
 
-                    if(isLeftLessThanOrEqualToRight==false)
+                    if (isLeftLessThanOrEqualToRight == false)
                     {
                         error(HighCTokenLibrary.FOR + ": The lower bound was greater than the upper bound.");
                         return false;
                     }
 
-                    if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true)==false)
+                    if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true) == false)
                     {
                         error();
                         return false;
@@ -5023,7 +5429,7 @@ namespace HighCInterpreterCore
                     HighCData lowerBound = new HighCData(type);
                     HighCData upperBound = new HighCData(type);
 
-                    if(lowerBound.setData(leftExpression)==false)
+                    if (lowerBound.setData(leftExpression) == false)
                     {
                         if (lowerBound.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                         {
@@ -5072,9 +5478,9 @@ namespace HighCInterpreterCore
                         limitValue.setData(lowerBound);
                     }
 
-                    Boolean continueLooping=true;
+                    Boolean continueLooping = true;
                     //currentValue.compare(limitValue, "~=", out continueLooping);
-                    
+
                     while (continueLooping)
                     {
                         currentValue.compare(limitValue, "~=", out continueLooping);
@@ -5094,20 +5500,20 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                error(HighCTokenLibrary.FOR + " \"" + identifier + "\": Unknown Error ("+newItem.errorCode+").");
+                                error(HighCTokenLibrary.FOR + " \"" + identifier + "\": Unknown Error (" + newItem.errorCode + ").");
                             }
                             return false;
                         }
                         newEnvironment.addNewItem(identifier, newItem);
                         if (HC_block(newEnvironment) == false)
                         {
-                            error(HighCTokenLibrary.FOR+": Expected a block \"{ }\".");
+                            error(HighCTokenLibrary.FOR + ": Expected a block \"{ }\".");
                             return false;
                         }
-                        
+
                         if (type.isInteger())
                         {
-                            if(direction==true)
+                            if (direction == true)
                             {
                                 currentValue.data = (Int64)(currentValue.data) + 1;
                             }
@@ -5116,11 +5522,11 @@ namespace HighCInterpreterCore
                                 currentValue.data = (Int64)(currentValue.data) - 1;
                             }
                         }
-                        else if(type.isBoolean())
+                        else if (type.isBoolean())
                         {
-                            if(direction==true)
+                            if (direction == true)
                             {
-                                if((Boolean)(currentValue.data)==true)
+                                if ((Boolean)(currentValue.data) == true)
                                 {
                                     error("For: Unknown Error");
                                     return false;
@@ -5143,15 +5549,15 @@ namespace HighCInterpreterCore
                                 }
                             }
                         }
-                        else if(type.isCharacter())
+                        else if (type.isCharacter())
                         {
                             if (direction == true)
                             {
-                                currentValue.data = ""+(Char)(((String)(currentValue.data))[0] + 1);
+                                currentValue.data = "" + (Char)(((String)(currentValue.data))[0] + 1);
                             }
                             else
                             {
-                                currentValue.data = ""+(Char)(((String)(currentValue.data))[0] - 1);
+                                currentValue.data = "" + (Char)(((String)(currentValue.data))[0] - 1);
                             }
                         }
                         else if (type.isEnumeration())
@@ -5166,8 +5572,8 @@ namespace HighCInterpreterCore
                             }
                         }
                     }
-                    
-                    return true;    
+
+                    return true;
                 }
                 else
                 {
@@ -5175,7 +5581,7 @@ namespace HighCInterpreterCore
                     return false;
                 }
             }
-         
+
             return false;
         }
 
@@ -5262,7 +5668,7 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                addDebugInfo(HighCTokenLibrary.ON + ": The label types (" + labelData.type + "), (" + labelData2.type + ") must match the type for \"" + HighCTokenLibrary.CHOICE + "\" (" + value.type + ")" );
+                                addDebugInfo(HighCTokenLibrary.ON + ": The label types (" + labelData.type + "), (" + labelData2.type + ") must match the type for \"" + HighCTokenLibrary.CHOICE + "\" (" + value.type + ")");
                             }
                         }
                         else
@@ -5272,7 +5678,7 @@ namespace HighCInterpreterCore
                     }
                     else
                     {
-                        addDebugInfo(HighCTokenLibrary.ON + ": " + HighCTokenLibrary.BOOLEAN+" types cannot utilize the range case specifier ("+HighCTokenLibrary.ELLIPSES+").");
+                        addDebugInfo(HighCTokenLibrary.ON + ": " + HighCTokenLibrary.BOOLEAN + " types cannot utilize the range case specifier (" + HighCTokenLibrary.ELLIPSES + ").");
 
                         return false;
                     }
@@ -5298,7 +5704,7 @@ namespace HighCInterpreterCore
                     }
                     else
                     {
-                        error(HighCTokenLibrary.ON + ": The label type (" + labelData.type + ") must match the type for \"" + HighCTokenLibrary.CHOICE + "\" (" + value.type + ")" );
+                        error(HighCTokenLibrary.ON + ": The label type (" + labelData.type + ") must match the type for \"" + HighCTokenLibrary.CHOICE + "\" (" + value.type + ")");
                         label = "No Value";
                         return false;
                     }
@@ -5308,7 +5714,7 @@ namespace HighCInterpreterCore
             label = "No Value";
             return false;
         }
-        
+
         private Boolean HC_list_command()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_list_command"); }
@@ -5319,41 +5725,41 @@ namespace HighCInterpreterCore
             insert <list – id> @ <int – expr> = <element or list>
             remove <list – id> @ <slice>
              */
-            
-            if(matchTerminal(HighCTokenLibrary.APPEND))
+
+            if (matchTerminal(HighCTokenLibrary.APPEND))
             {
                 String identifier;
-                if(HC_id(out identifier))
+                if (HC_id(out identifier))
                 {
                     if (currentEnvironment.contains(identifier))
                     {
                         HighCData list = currentEnvironment.getItem(identifier);
 
-                        if(list.isList()==false)
+                        if (list.isList() == false)
                         {
                             error(HighCTokenLibrary.APPEND + ": The provided identifier \"" + identifier + "\" is not a list.");
                             return false;
                         }
 
-                        if(matchTerminal(HighCTokenLibrary.EQUAL,true)==false)
+                        if (matchTerminal(HighCTokenLibrary.EQUAL, true) == false)
                         {
                             error();
                             return false;
                         }
 
                         HighCData newItems;
-                        if(HC_element_or_list(out newItems))
+                        if (HC_element_or_list(out newItems))
                         {
-                            if(list.type.dataType==newItems.type.dataType &&
-                               list.type.objectReference==newItems.type.objectReference)
+                            if (list.type.dataType == newItems.type.dataType &&
+                               list.type.objectReference == newItems.type.objectReference)
                             {
-                                foreach(HighCData value in ((List<HighCData>)newItems.data))
+                                foreach (HighCData value in ((List<HighCData>)newItems.data))
                                 {
                                     HighCData newValue = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, list.type.dataType, list.type.objectReference), null);
                                     newValue.type.minimum = list.type.minimum;
                                     newValue.type.maximum = list.type.maximum;
 
-                                    if(newValue.setData(value)==false)
+                                    if (newValue.setData(value) == false)
                                     {
                                         if (newValue.errorCode == HighCData.ERROR_CONSTANT_CHANGED)
                                         {
@@ -5379,7 +5785,7 @@ namespace HighCInterpreterCore
                             }
                             else
                             {
-                                error(HighCTokenLibrary.APPEND + ": The type of the specified list <" + list.type+"> does not match <"+newItems.type+">.");
+                                error(HighCTokenLibrary.APPEND + ": The type of the specified list <" + list.type + "> does not match <" + newItems.type + ">.");
                                 return false;
                             }
                         }
@@ -5391,7 +5797,7 @@ namespace HighCInterpreterCore
                     }
                     else
                     {
-                        error(HighCTokenLibrary.APPEND + ": The provided identifier \"" + identifier+"\" could not be found.");
+                        error(HighCTokenLibrary.APPEND + ": The provided identifier \"" + identifier + "\" could not be found.");
                         return false;
                     }
                 }
@@ -5426,15 +5832,15 @@ namespace HighCInterpreterCore
                         }
 
                         Int64 intBuffer;
-                        if(HC_integer_expression(out intBuffer)==false)
+                        if (HC_integer_expression(out intBuffer) == false)
                         {
                             error(HighCTokenLibrary.INSERT + ": Expected an integer value to specify the list position to insert after.");
                             return false;
                         }
 
-                        if(intBuffer<1 || (intBuffer > list.getCount() && intBuffer>1 && list.getCount()!=0))
+                        if (intBuffer < 1 || (intBuffer > list.getCount() && intBuffer > 1 && list.getCount() != 0))
                         {
-                            error(HighCTokenLibrary.INSERT + ": Integer value must be between 1 and "+ ((List<HighCData>)list.data).Count + ".");
+                            error(HighCTokenLibrary.INSERT + ": Integer value must be between 1 and " + ((List<HighCData>)list.data).Count + ".");
                             return false;
                         }
 
@@ -5475,7 +5881,7 @@ namespace HighCInterpreterCore
                                         return false;
                                     }
 
-                                    ((List<HighCData>)(list.data)).Insert(index+offset, value);
+                                    ((List<HighCData>)(list.data)).Insert(index + offset, value);
                                     offset++;
                                 }
 
@@ -5535,17 +5941,17 @@ namespace HighCInterpreterCore
                         int length;
                         if (HC_slice(out startingPosition, out length))
                         {
-                            if(list.getCount()==0)
+                            if (list.getCount() == 0)
                             {
                                 error(HighCTokenLibrary.REMOVE + ": An empty list cannot have items removed from it.");
                                 return false;
                             }
-                            else if(startingPosition<=0 || startingPosition > list.getCount())
+                            else if (startingPosition <= 0 || startingPosition > list.getCount())
                             {
-                                error(HighCTokenLibrary.REMOVE + ": The starting position to remove from the list must be between 1 and "+ list.getCount() + ".");
+                                error(HighCTokenLibrary.REMOVE + ": The starting position to remove from the list must be between 1 and " + list.getCount() + ".");
                                 return false;
                             }
-                            else if(startingPosition+length-1 > list.getCount())
+                            else if (startingPosition + length - 1 > list.getCount())
                             {
                                 error(HighCTokenLibrary.REMOVE + ": The second index must be less than " + list.getCount() + ".");
                                 return false;
@@ -5594,7 +6000,7 @@ namespace HighCInterpreterCore
                 storeToken = currentToken;
 
                 //Allows for nested lists for arrays
-                if(matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                if (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
                 {
                     return false;
                 }
@@ -5602,7 +6008,7 @@ namespace HighCInterpreterCore
                 currentToken = storeToken;
                 HighCData newElement;
                 if (HC_element_constant(out newElement))
-                { 
+                {
                     storeToken = currentToken;
                     values.Add(newElement);
 
@@ -5623,7 +6029,7 @@ namespace HighCInterpreterCore
                 }
 
                 currentToken = storeToken;
-                if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET,true))
+                if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET, true))
                 {
                     Console.WriteLine(currentToken + " <list constant> -> { <element constant list> } -> " + values);
                     return true;
@@ -5634,7 +6040,7 @@ namespace HighCInterpreterCore
                     return false;
                 }
             }
-            
+
             return false;
         }
 
@@ -5650,13 +6056,13 @@ namespace HighCInterpreterCore
             <list – function call>
             {<element – expression list>}
              */
-            
+
             List<HighCData> values;
-            if(HC_list_constant(out values))
+            if (HC_list_constant(out values))
             {
-                if(values.Count>0)
+                if (values.Count > 0)
                 {
-                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, values[0].type.dataType,values[0].type.objectReference), values);
+                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, values[0].type.dataType, values[0].type.objectReference), values);
                 }
                 else
                 {
@@ -5680,7 +6086,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <list expression> -> <list variable>" + " -> " + value);
                 return true;
             }
-            
+
             currentToken = storeToken;
             if (HC_function_call(out value, new HighCType(HighCType.LIST_SUBTYPE, null)))
             {
@@ -5769,25 +6175,25 @@ namespace HighCInterpreterCore
                 {
                     values = (List<HighCData>)temp.data;
                     storeToken = currentToken;
-                    if(matchTerminal(HighCTokenLibrary.AT_SIGN))
+                    if (matchTerminal(HighCTokenLibrary.AT_SIGN))
                     {
                         int index, length;
-                        if(HC_slice(out index, out length))
+                        if (HC_slice(out index, out length))
                         {
-                            if(index+length-1<=values.Count)
+                            if (index + length - 1 <= values.Count)
                             {
-                                values = values.GetRange(index-1, length);
+                                values = values.GetRange(index - 1, length);
                                 Console.WriteLine(currentToken + " <list variable> -> <id>@<slice> -> " + identifier + " " + values);
                                 return true;
                             }
-                            else if(values.Count==0)
+                            else if (values.Count == 0)
                             {
                                 error("List Variable: Empty lists cannot be accessed in this way.");
                                 return false;
                             }
                             else
                             {
-                                error("List Variable: The specified slice must be between 1 and "+values.Count+".");
+                                error("List Variable: The specified slice must be between 1 and " + values.Count + ".");
                                 return false;
                             }
                         }
@@ -5861,7 +6267,7 @@ namespace HighCInterpreterCore
                         }
                         else
                         {
-                            error(HighCTokenLibrary.UNTIL + ": A boolean expression was expected inside the parenthesis." );
+                            error(HighCTokenLibrary.UNTIL + ": A boolean expression was expected inside the parenthesis.");
                             return false;
                         }
                     }
@@ -5900,6 +6306,71 @@ namespace HighCInterpreterCore
             return false;
         }
 
+        private Boolean HC_method(out HighCMethodDeclaration method)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_method"); }
+            int storeToken = currentToken;
+            method = null;
+
+            /*
+            <option> <modifiers> method <id> ( <formal parameters> ) => <result> <block>
+             */
+
+            String option;
+            if (HC_option(out option)) { } //always returns true
+
+            Boolean pure, recursive;
+            if (HC_modifiers(out pure, out recursive)) { } //always returns true
+
+            if (matchTerminal(HighCTokenLibrary.METHOD) == false)
+            {
+                return false;
+            }
+
+            String id;
+            if (HC_id(out id) == false)
+            {
+                error("Class Method Definition: Expected an identifier after " + HighCTokenLibrary.METHOD + ".");
+                return false;
+            }
+
+            if (matchTerminal(HighCTokenLibrary.LEFT_PARENTHESIS, true) == false)
+            {
+                error();
+                return false;
+            }
+
+            List<HighCParameter> parameterList;
+            if (HC_formal_parameters(out parameterList) == false)
+            {
+                return false;
+            }
+
+            if (matchTerminal(HighCTokenLibrary.RIGHT_PARENTHESIS, true) == false ||
+                matchTerminal(HighCTokenLibrary.ARROW, true) == false)
+            {
+                error();
+                return false;
+            }
+
+            HighCType resultType;
+            if (HC_result(out resultType) == false)
+            {
+                error("Method Declaration: Expected a type or void as a result.");
+                return false;
+            }
+
+            int startOfBlock = currentToken;
+            if (skipBlock() == false)
+            {
+                error("Method Declaration: Expected a block after the result.");
+                return false;
+            }
+
+            method = new HighCMethodDeclaration(id, option, pure, recursive, parameterList, resultType, startOfBlock);
+
+            return true;
+        }
 
         private Boolean HC_modifiers(out Boolean pure, out Boolean recursive)
         {
@@ -5920,10 +6391,10 @@ namespace HighCInterpreterCore
             {
                 pure = true;
                 storeToken = currentToken;
-                if(matchTerminal(HighCTokenLibrary.RECURSIVE))
+                if (matchTerminal(HighCTokenLibrary.RECURSIVE))
                 {
                     recursive = true;
-                    Console.WriteLine(currentToken + " <modifiers>" + " -> " + HighCTokenLibrary.PURE + " "+ HighCTokenLibrary.RECURSIVE);
+                    Console.WriteLine(currentToken + " <modifiers>" + " -> " + HighCTokenLibrary.PURE + " " + HighCTokenLibrary.RECURSIVE);
                     return true;
                 }
                 else
@@ -5989,6 +6460,77 @@ namespace HighCInterpreterCore
             type = "";
             return false;
         }
+        
+        private Boolean HC_object_constant(out List<HighCData> constants)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_object_constant"); }
+            int storeToken = currentToken;
+            constants = new List<HighCData>();
+            /*
+            { }
+            { <initiated – field list> }
+             */
+            
+            if(matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+            {
+                storeToken = currentToken;
+                HighCData constant;
+                if(HC_initiated_field(out constant))
+                {
+                    storeToken = currentToken;
+                    constants.Add(constant);
+                    while (matchTerminal(HighCTokenLibrary.COMMA))
+                    {
+                        if (HC_initiated_field(out constant))
+                        {
+                            storeToken = currentToken;
+                            constants.Add(constant);
+                        }
+                        else
+                        {
+                            error("Class Instantiation: Expected another field assignment after the comma.");
+                            return false;
+                        }
+                    }
+                }
+                currentToken = storeToken;
+
+                if(matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET,true))
+                {
+                    Console.WriteLine(currentToken + " <object constant> -> { <initiated – field list> } -> Constants Found: " + constants.Count);
+                    return true;
+                }
+                else
+                {
+                    error();
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private Boolean HC_option(out String option)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_option"); }
+            int storeToken = currentToken;
+            option = "";
+            /*
+            last
+            ε
+             */
+
+            if (matchTerminal(HighCTokenLibrary.LAST))
+            {
+                option = HighCTokenLibrary.LAST;
+                Console.WriteLine(currentToken + " <option> -> " + option);
+                return true;
+            }
+
+            Console.WriteLine(currentToken + " <option> -> ε");
+            currentToken = storeToken;
+            return true;
+        }
 
         private Boolean HC_out_element(out String stringBuffer)
         {
@@ -6005,7 +6547,7 @@ namespace HighCInterpreterCore
             <arith – expr> : <int – expr>.<int - expr>
             endl
              */
-            
+
             //Ensures Minimum Length
             if (HC_scalar_expression(out value))
             {
@@ -6014,7 +6556,7 @@ namespace HighCInterpreterCore
                 storeToken = currentToken;
                 if (matchTerminal(HighCTokenLibrary.COLON))
                 {
-                    if(HC_integer_expression(out term1))
+                    if (HC_integer_expression(out term1))
                     {
                         if (stringBuffer.Length < term1)
                         {
@@ -6031,7 +6573,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             currentToken = storeToken;
             if (HC_arithmetic_expression(ref value) &&
                 matchTerminal(HighCTokenLibrary.COLON) &&
@@ -6058,9 +6600,9 @@ namespace HighCInterpreterCore
 
             //MAY CAUSE UNEXPECTED SIDE EFFECTS, KEEP AN EYE OUT
             currentToken = storeToken;
-            if(HC_expression(out value))
+            if (HC_expression(out value))
             {
-                if(value.isBoolean())
+                if (value.isBoolean())
                 {
                     stringBuffer = value.data.ToString();
                     return true;
@@ -6084,10 +6626,10 @@ namespace HighCInterpreterCore
              */
 
             if (matchTerminal(HighCTokenLibrary.OUT) == false) { return false; }
-            
-            if(pureStatus==true)
+
+            if (pureStatus == true)
             {
-                error(HighCTokenLibrary.OUT + ": This statement cannot be used in a pure function." );
+                error(HighCTokenLibrary.OUT + ": This statement cannot be used in a pure function.");
                 return false;
             }
 
@@ -6113,24 +6655,24 @@ namespace HighCInterpreterCore
 
             if (needAnotherOut == true)
             {
-                error(HighCTokenLibrary.OUT + ": another element was expected after the comma." );
+                error(HighCTokenLibrary.OUT + ": another element was expected after the comma.");
                 return false;
             }
 
             if (atLeastOneFound == false)
             {
-                error(HighCTokenLibrary.OUT + ": at least one element was expected." );
+                error(HighCTokenLibrary.OUT + ": at least one element was expected.");
                 return false;
             }
             else
             {
-                Console.WriteLine(currentToken + " <output> -> <out element>" + " -> " + stringBuffer.Replace(Environment.NewLine,HighCTokenLibrary.END_OF_LINE));
-                
+                Console.WriteLine(currentToken + " <output> -> <out element>" + " -> " + stringBuffer.Replace(Environment.NewLine, HighCTokenLibrary.END_OF_LINE));
+
                 consoleText += stringBuffer;
                 return true;
             }
         }
-        
+
         private Boolean HC_parameter(out HighCParameter parameter)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_parameter"); }
@@ -6150,23 +6692,23 @@ namespace HighCInterpreterCore
 
             if (HC_direction(out inAllowed, out outAllowed))
             {
-                if(HC_type(out type))
+                if (HC_type(out type))
                 {
-                    if(HC_id(out id))
+                    if (HC_id(out id))
                     {
                         storeToken = currentToken;
-                        if(matchTerminal(HighCTokenLibrary.AT_SIGN))
+                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
                         {
                             type.memoryType = HighCType.LIST_SUBTYPE;
                             parameter = new HighCParameter(id, type, inAllowed, outAllowed, parameterIDList);
-                            Console.WriteLine(currentToken + " <parameter> -> <direction><type><id>@ ->"+parameter);
+                            Console.WriteLine(currentToken + " <parameter> -> <direction><type><id>@ ->" + parameter);
                             return true;
                         }
 
                         currentToken = storeToken;
-                        
+
                         String currentID;
-                        while(HC_subscript_parameter(out currentID))
+                        while (HC_subscript_parameter(out currentID))
                         {
                             type.memoryType = HighCType.ARRAY_SUBTYPE;
                             storeToken = currentToken;
@@ -6199,6 +6741,117 @@ namespace HighCInterpreterCore
             }
         }
 
+        private Boolean HC_parent(out String parentName)
+        {
+            Console.WriteLine("Attempting: " + "HC_parent");
+            int storeToken = currentToken;
+            parentName = "";
+            /*
+            addto <class name>
+            addto <type – parameter id>
+            ε
+             */
+
+            if (matchTerminal(HighCTokenLibrary.ADD_TO))
+            {
+                if (HC_class_name(out parentName))
+                {
+                    //Ensure class type is not final
+                    return true;
+                }
+
+                currentToken = storeToken;
+                //Check for type parameter ID here, currently unimplemented
+
+                error("Class Definition: Expected an existing non-final class name or parameter type ID after \"" + HighCTokenLibrary.ADD_TO + "\".");
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <parent> -> ε");
+            currentToken = storeToken;
+            return true;
+        }
+
+        private Boolean HC_program()
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_program"); }
+
+            int storeToken = currentToken;
+
+            while (HC_compiler_directive()) { storeToken = currentToken; }
+            currentToken = storeToken;
+
+            storeToken = currentToken;
+            while (HC_user_constant()) { storeToken = currentToken; }
+            currentToken = storeToken;
+
+            storeToken = currentToken;
+            while (HC_global_variable()) { storeToken = currentToken; }
+            currentToken = storeToken;
+
+            storeToken = currentToken;
+            while (HC_class()) { storeToken = currentToken; }
+            currentToken = storeToken;
+
+            storeToken = currentToken;
+            while (HC_function()) { storeToken = currentToken; }
+            currentToken = storeToken;
+
+            currentEnvironment = new HighCEnvironment(globalEnvironment);
+
+            if (matchTerminal(HighCTokenLibrary.MAIN, true))
+            {
+                if (HC_block())
+                {
+                    Console.WriteLine(currentToken + " <program>");
+                    return true;
+                }
+            }
+            else
+            {
+                addDebugInfo("Expected to find a \"" + HighCTokenLibrary.MAIN + "\"" + Environment.NewLine, false);
+            }
+
+            if (stopProgram == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private Boolean HC_qualifier(out String qualifier)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_qualifier"); }
+            int storeToken = currentToken;
+            qualifier = "";
+
+            /*
+            ε
+            abstract
+            final
+             */
+
+            if (matchTerminal(HighCTokenLibrary.ABSTRACT))
+            {
+                qualifier = HighCTokenLibrary.ABSTRACT;
+                Console.WriteLine(currentToken + " <qualifier> -> " + qualifier);
+                return true;
+            }
+
+            currentToken = storeToken;
+            if (matchTerminal(HighCTokenLibrary.FINAL))
+            {
+                qualifier = HighCTokenLibrary.FINAL;
+                Console.WriteLine(currentToken + " <qualifier> -> " + qualifier);
+                return true;
+            }
+
+            currentToken = storeToken;
+            Console.WriteLine(currentToken + " <qualifier> -> ε");
+            return true;
+        }
+
         private Boolean HC_relational_expression(HighCData term, out Boolean value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_relational_expression"); }
@@ -6222,7 +6875,7 @@ namespace HighCInterpreterCore
             HighCData term2 = null;
             value = false;
 
-            if (term==null)
+            if (term == null)
             {
                 return false;
             }
@@ -6421,54 +7074,7 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_program()
-        {
-            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_program"); }
 
-            int storeToken = currentToken;
-            
-            while (HC_compiler_directive()) { storeToken = currentToken; }
-            currentToken = storeToken;
-
-            storeToken = currentToken;
-            while (HC_user_constant()) { storeToken = currentToken; }
-            currentToken = storeToken;
-            
-            storeToken = currentToken;
-            while (HC_global_variable()) { storeToken = currentToken; }
-            currentToken = storeToken;
-            
-            storeToken = currentToken;
-            while (HC_class()) { storeToken = currentToken; }
-            currentToken = storeToken;
-
-            storeToken = currentToken;
-            while (HC_function()) { storeToken = currentToken; }
-            currentToken = storeToken;
-
-            currentEnvironment = new HighCEnvironment(globalEnvironment);
-
-            if (matchTerminal(HighCTokenLibrary.MAIN, true))
-            {
-                if (HC_block())
-                {
-                    Console.WriteLine(currentToken + " <program>");
-                    return true;
-                }
-            }
-            else
-            {
-                addDebugInfo("Expected to find a \"" + HighCTokenLibrary.MAIN + "\"" + Environment.NewLine, false);
-            }
-
-            if (stopProgram == true)
-            {
-                return true;
-            }
-
-            return false;
-        }
-        
         private Boolean HC_result(out HighCType type)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_result"); }
@@ -6481,7 +7087,7 @@ namespace HighCInterpreterCore
 
             type = null;
 
-            if(matchTerminal(HighCTokenLibrary.VOID))
+            if (matchTerminal(HighCTokenLibrary.VOID))
             {
                 type = new HighCType(HighCType.VOID_TYPE);
                 Console.WriteLine(currentToken + " <result> -> " + type);
@@ -6489,7 +7095,7 @@ namespace HighCInterpreterCore
             }
 
             currentToken = storeToken;
-            if(HC_return_type(out type))
+            if (HC_return_type(out type))
             {
                 Console.WriteLine(currentToken + " <result> -> " + type);
                 return true;
@@ -6497,7 +7103,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_return()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_return"); }
@@ -6509,7 +7115,7 @@ namespace HighCInterpreterCore
             return
              */
 
-            if(matchTerminal(HighCTokenLibrary.RETURN) &&
+            if (matchTerminal(HighCTokenLibrary.RETURN) &&
                 HC_expression(out value))
             {
                 returnValue = value;
@@ -6527,6 +7133,21 @@ namespace HighCInterpreterCore
 
             return false;
         }
+        
+        private Boolean HC_return_subscript()
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_return_subscript"); }
+            int storeToken = currentToken;
+
+            /*
+            [ <positive – int – constant> ]
+            [ <in – int – parameter id> ]
+             */
+            
+
+
+            return false;
+        }
 
         private Boolean HC_return_type(out HighCType type)
         {
@@ -6540,14 +7161,16 @@ namespace HighCInterpreterCore
 
             type = null;
 
-            if(HC_type(out type))
+            if (HC_type(out type))
             {
                 storeToken = currentToken;
-                if(matchTerminal(HighCTokenLibrary.AT_SIGN))
+                if (matchTerminal(HighCTokenLibrary.AT_SIGN))
                 {
-                    type.memoryType = HighCType.LIST_SUBTYPE;    
+                    type.memoryType = HighCType.LIST_SUBTYPE;
+                    return true;
                 }
 
+                currentToken = storeToken;
                 return true;
             }
 
@@ -6565,16 +7188,16 @@ namespace HighCInterpreterCore
             <string – constant>
             <float – constant>
              */
-             
+
             String stringTerm1 = "";
             Double doubleTerm1 = 0.0;
-            
+
             if (HC_discrete_constant(out value))
             {
                 Console.WriteLine(currentToken + " <scalar constant> -> <discrete constant>" + " -> " + value);
                 return true;
             }
-            
+
             currentToken = storeToken;
             if (HC_string_constant(out stringTerm1))
             {
@@ -6582,7 +7205,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <scalar constant> -> <string constant>" + " -> " + value);
                 return true;
             }
-            
+
             currentToken = storeToken;
             if (HC_float_constant(out doubleTerm1))
             {
@@ -6590,7 +7213,7 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <scalar constant> -> <float constant>" + " -> " + value);
                 return true;
             }
-            
+
             return false;
         }
 
@@ -6611,7 +7234,7 @@ namespace HighCInterpreterCore
             HighCData term1 = null;
             Boolean boolTerm = false;
             String stringTerm = "";
-            
+
             if (HC_arithmetic_expression(ref term1) == true)
             {
                 value = term1;
@@ -6630,7 +7253,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             currentToken = storeToken;
             if (HC_discrete_expression(out value, doNotCheckTypes))
             {
@@ -6657,7 +7280,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             value = null;
             return false;
         }
@@ -6709,13 +7332,13 @@ namespace HighCInterpreterCore
                         }
                         else
                         {
-                            error(HighCTokenLibrary.FLOAT + HighCTokenLibrary.COLON + ": The number of decimals to show must be at least 1." );
+                            error(HighCTokenLibrary.FLOAT + HighCTokenLibrary.COLON + ": The number of decimals to show must be at least 1.");
                             return false;
                         }
                     }
                     else
                     {
-                        error(HighCTokenLibrary.FLOAT+": Expected a positive <"+HighCTokenLibrary.INTEGER+"> value after the colon to indicate the precision of the preceding float variable.");
+                        error(HighCTokenLibrary.FLOAT + ": Expected a positive <" + HighCTokenLibrary.INTEGER + "> value after the colon to indicate the precision of the preceding float variable.");
                         return false;
                     }
                 }
@@ -6726,7 +7349,7 @@ namespace HighCInterpreterCore
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -6741,7 +7364,7 @@ namespace HighCInterpreterCore
             -
              */
 
-            if(matchTerminal(HighCTokenLibrary.PLUS_SIGN))
+            if (matchTerminal(HighCTokenLibrary.PLUS_SIGN))
             {
                 return true;
             }
@@ -6770,7 +7393,7 @@ namespace HighCInterpreterCore
 
             Int64 intTerm1;
             Int64 intTerm2;
-            if(HC_integer_expression(out intTerm1))
+            if (HC_integer_expression(out intTerm1))
             {
                 startingPosition = (int)intTerm1;
 
@@ -6786,12 +7409,12 @@ namespace HighCInterpreterCore
                 {
                     if (HC_integer_expression(out intTerm2))
                     {
-                        if(intTerm2 < intTerm1)
+                        if (intTerm2 < intTerm1)
                         {
                             error("Slice (<int> ... <int>): The second term must be greater than or equal to the first.");
                             return false;
                         }
-                        length = (int)(intTerm2 - intTerm1)+1;
+                        length = (int)(intTerm2 - intTerm1) + 1;
                         return true;
                     }
                     else
@@ -6893,7 +7516,7 @@ namespace HighCInterpreterCore
             currentToken = storeToken;
             return true;
         }
-        
+
         private Boolean HC_string_term(out String stringBuffer)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_string_term"); }
@@ -7028,12 +7651,12 @@ namespace HighCInterpreterCore
 
                 if (temp == null)
                 {
-                    error("String Variable: The specified variable \"" + identifier + "\" could not be found." );
+                    error("String Variable: The specified variable \"" + identifier + "\" could not be found.");
                     return false;
                 }
                 else if (temp.readable == false)
                 {
-                    error("String Variable: The specified variable \"" + identifier + "\" cannot be referenced." );
+                    error("String Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
                     return false;
                 }
                 else if (temp.isString())
@@ -7117,10 +7740,10 @@ namespace HighCInterpreterCore
             Int64 term1;
             value = 0;
 
-            if(matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET))
+            if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET))
             {
                 if (HC_integer_constant(out term1) &&
-                    term1>0)
+                    term1 > 0)
                 {
                     if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET))
                     {
@@ -7136,13 +7759,13 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    error(HighCTokenLibrary.ARRAY+": Expected a positive integer dimension specifier." );
+                    error(HighCTokenLibrary.ARRAY + ": Expected a positive integer dimension specifier.");
                 }
             }
-            
+
             return false;
         }
-        
+
         private Boolean HC_subscript_expression(out int value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_subscript_expression"); }
@@ -7153,15 +7776,15 @@ namespace HighCInterpreterCore
             if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET))
             {
                 Int64 intBuffer;
-                if(HC_integer_expression(out intBuffer))
+                if (HC_integer_expression(out intBuffer))
                 {
-                    if(intBuffer<1)
+                    if (intBuffer < 1)
                     {
                         error("Subscript: The value must be greater than 0.");
                         return false;
                     }
 
-                    if(matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET,true))
+                    if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true))
                     {
                         value = (int)intBuffer;
                         return true;
@@ -7230,15 +7853,19 @@ namespace HighCInterpreterCore
             }
 
             currentToken = storeToken;
-            if (HC_class_name())
+            String className;
+            if (HC_class_name(out className))
             {
+                HighCData classData = globalEnvironment.getItem(className);
+                type = classData.type;
+
                 Console.WriteLine(currentToken + " <type> -> <class name> ->" + type);
                 return true;
             }
 
             return false;
         }
-        
+
         private Boolean HC_type_parameters()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_type_parameters"); }
@@ -7288,7 +7915,7 @@ namespace HighCInterpreterCore
             return true;
             */
         }
-        
+
         private Boolean HC_user_constant()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_user_constant"); }
@@ -7304,49 +7931,49 @@ namespace HighCInterpreterCore
             HighCType declaredType = null;
             HighCType valueType = null;
 
-            if(matchTerminal(HighCTokenLibrary.ENUMERATION))
+            if (matchTerminal(HighCTokenLibrary.ENUMERATION))
             {
                 String identifier;
-                if(HC_id(out identifier))
+                if (HC_id(out identifier))
                 {
-                    if(matchTerminal(HighCTokenLibrary.EQUAL,true) &&
-                        matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET,true))
+                    if (matchTerminal(HighCTokenLibrary.EQUAL, true) &&
+                        matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET, true))
                     {
                         List<String> idList = new List<String>();
                         String stringBuffer;
-                        if(HC_id(out stringBuffer))
+                        if (HC_id(out stringBuffer))
                         {
                             idList.Add(stringBuffer);
                             storeToken = currentToken;
-                            while(matchTerminal(HighCTokenLibrary.COMMA))
+                            while (matchTerminal(HighCTokenLibrary.COMMA))
                             {
-                                if(HC_id(out stringBuffer))
+                                if (HC_id(out stringBuffer))
                                 {
-                                    if(idList.Contains(stringBuffer)==false)
+                                    if (idList.Contains(stringBuffer) == false)
                                     {
                                         idList.Add(stringBuffer);
                                         storeToken = currentToken;
                                     }
                                     else
                                     {
-                                        error("Enum Declaration (" + identifier + "): The identifier \""+stringBuffer+"\" cannot be used more than once." + HighCTokenLibrary.ENUMERATION + "\"." );
+                                        error("Enum Declaration (" + identifier + "): The identifier \"" + stringBuffer + "\" cannot be used more than once." + HighCTokenLibrary.ENUMERATION + "\".");
                                         return false;
                                     }
                                 }
                                 else
                                 {
-                                    error("Enum Declaration (" + identifier + "): Expected another identifier to be assigned after comma." + HighCTokenLibrary.ENUMERATION + "\"." );
+                                    error("Enum Declaration (" + identifier + "): Expected another identifier to be assigned after comma." + HighCTokenLibrary.ENUMERATION + "\".");
                                     return false;
                                 }
                             }
 
                             currentToken = storeToken;
-                            if(matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET,true))
+                            if (matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET, true))
                             {
-                                if(globalEnvironment.contains(identifier)==false)
+                                if (globalEnvironment.contains(identifier) == false)
                                 {
                                     HighCEnumerationType enumeration = new HighCEnumerationType(identifier, idList);
-                                    globalEnvironment.addNewItem(identifier, new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,HighCType.ENUMERATION_TYPE, enumeration), enumeration, false, true));
+                                    globalEnvironment.addNewItem(identifier, new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.ENUMERATION_TYPE, enumeration), enumeration, false, true));
 
                                     int i = 0;
                                     foreach (String enumConst in idList)
@@ -7354,11 +7981,11 @@ namespace HighCInterpreterCore
                                         if (globalEnvironment.contains(enumConst) == false)
                                         {
                                             i++;
-                                            globalEnvironment.addNewItem(enumConst, new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.ENUMERATION_INSTANCE, enumeration), new HighCEnumeration(enumConst, enumeration,i),false,true));
+                                            globalEnvironment.addNewItem(enumConst, new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.ENUMERATION_INSTANCE, enumeration), new HighCEnumeration(enumConst, enumeration, i), false, true));
                                         }
                                         else
                                         {
-                                            error("Enum Declaration (" + identifier + "): The enumeration constant \"" + enumConst + "\" is already being used and cannot be redeclared." );
+                                            error("Enum Declaration (" + identifier + "): The enumeration constant \"" + enumConst + "\" is already being used and cannot be redeclared.");
                                             return false;
                                         }
                                     }
@@ -7367,7 +7994,7 @@ namespace HighCInterpreterCore
                                 }
                                 else
                                 {
-                                    error("Enum Declaration (" + identifier + "): The enum identifier \""+identifier+"\" is already being used and cannot be redeclared." );
+                                    error("Enum Declaration (" + identifier + "): The enum identifier \"" + identifier + "\" is already being used and cannot be redeclared.");
                                     return false;
                                 }
                             }
@@ -7379,7 +8006,7 @@ namespace HighCInterpreterCore
                         }
                         else
                         {
-                            error("Enum Declaration ("+identifier+"): Expected at least one identifier to be assigned after the equal sign." + HighCTokenLibrary.ENUMERATION + "\"." );
+                            error("Enum Declaration (" + identifier + "): Expected at least one identifier to be assigned after the equal sign." + HighCTokenLibrary.ENUMERATION + "\".");
                             return false;
                         }
                     }
@@ -7391,7 +8018,7 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    error("Enum Declaration: Expected an identifier after \""+HighCTokenLibrary.ENUMERATION+"\"." );
+                    error("Enum Declaration: Expected an identifier after \"" + HighCTokenLibrary.ENUMERATION + "\".");
                     return false;
                 }
             }
@@ -7411,7 +8038,7 @@ namespace HighCInterpreterCore
                         if (declaredType.isInteger() &&
                             valueType.isFloat())
                         {
-                            addDebugInfo("Variable Declaration" + ": The type of the variable <" + valueType + "> does not match the type indicated <" + declaredType + ">." );
+                            addDebugInfo("Variable Declaration" + ": The type of the variable <" + valueType + "> does not match the type indicated <" + declaredType + ">.");
                             return false;
                         }
 
@@ -7430,13 +8057,13 @@ namespace HighCInterpreterCore
 
                     if (needAnother == true)
                     {
-                        addDebugInfo("Constant Declaration" + ": another element was expected after the comma." );
+                        addDebugInfo("Constant Declaration" + ": another element was expected after the comma.");
                         return false;
                     }
 
                     if (atLeastOneFound == false)
                     {
-                        addDebugInfo("Constant Declaration" + ": at least one declaration (\"<identifier> = <value>\") was expected after the type." );
+                        addDebugInfo("Constant Declaration" + ": at least one declaration (\"<identifier> = <value>\") was expected after the type.");
                         return false;
                     }
 
@@ -7446,7 +8073,7 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    addDebugInfo(HighCTokenLibrary.CREATE + ": Expected a data or class type." );
+                    addDebugInfo(HighCTokenLibrary.CREATE + ": Expected a data or class type.");
                 }
             }
 
@@ -7501,10 +8128,10 @@ namespace HighCInterpreterCore
                 Console.WriteLine(currentToken + " <var> -> <id> ->" + identifier + " " + subtype);
                 return true;
             }
-            
+
             return false;
         }
-        
+
         private Boolean HC_variable(out String identifier)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_variable"); }
@@ -7518,8 +8145,8 @@ namespace HighCInterpreterCore
             <list – variable> @ <slice> <- Performed where variable is called
             <object – variable>.<variable>
              */
-            
-            if(HC_id(out identifier))
+
+            if (HC_id(out identifier))
             {
                 Console.WriteLine(currentToken + " <variable> -> <id> ->" + identifier);
                 return true;
@@ -7527,7 +8154,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-        
+
         private Boolean HC_void_call()
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_void_call"); }
@@ -7536,7 +8163,7 @@ namespace HighCInterpreterCore
             /*
             call <void function call>
              */
-             
+
             if (matchTerminal(HighCTokenLibrary.CALL))
             {
                 HighCData outBuffer;
@@ -7560,118 +8187,132 @@ namespace HighCInterpreterCore
         }
 
         private Boolean _______________Unimplemented_Functions_______________() { return false; }
-
-        private Boolean HC_body() { return false; }
-        private Boolean HC_class() { return false; }
-        private Boolean HC_class_name() { return false; }
-        private Boolean HC_compiler_directive() { return false; }
-        private Boolean HC_data_field() { return false; }
-        private Boolean HC_element() { return false; }
+        
         private Boolean HC_field_assign() { return false; }
-        private Boolean HC_field_constant() { return false; }
-        private Boolean HC_initiated_field() { return false; }
         private Boolean HC_input() { /*Ensure Purity Check*/return false; }
-        private Boolean HC_method() { return false; }
-        private Boolean HC_object_constant() { return false; }
         private Boolean HC_object_expression(out HighCData value) { value = null; return false; }
-        private Boolean HC_option() { return false; }
-        private Boolean HC_parent() { return false; }
         private Boolean HC_prompt_variable() { return false; }
-        private Boolean HC_qualifier() { return false; }
-        private Boolean HC_return_subscript() { return false; }
         /*Generic Type Functions - Currently Unimplemented
         private Boolean HC_type_assignment() { return false; }
         private Boolean HC_type_group() { return false; }
         private Boolean HC_type_specifier() { return false; }
         //*/
     }
-
-    class HighCEnvironment
+    
+    public class HighCArray
     {
-        HighCEnvironment parent;
+        public HighCData[] array;
+        public List<int> dimensions;
+        public Boolean isSeedValue;
 
-        public List<String> identifiers = new List<String>();
-        public List<HighCData> data = new List<HighCData>();
-
-        public HighCEnvironment(){ }
-
-        public HighCEnvironment(HighCEnvironment newParent)
+        public HighCArray(HighCData[] newArray, List<int> newSizes, Boolean isSeed = false)
         {
-            parent = newParent;
+            array = newArray;
+            dimensions = newSizes;
+            isSeedValue = isSeed;
         }
 
-        public Boolean contains(String identifier)
+        public HighCData getItemAt(List<int> index)
         {
-            if(identifiers.Contains(identifier))
+            int offset = 0;
+            int dimensionSizeBuffer = 1;
+            int i = index.Count - 1;
+            while (i > -1)
             {
-                return true;
+                offset = offset + index[i] * dimensionSizeBuffer;
+                dimensionSizeBuffer = dimensionSizeBuffer * dimensions[i];
+                i--;
             }
 
-            if(parent!=null &&
-               parent.contains(identifier))
+            if (offset < array.Length &&
+                offset >= 0)
             {
-                return true;
+                return array[offset];
             }
-
-            return false;
+            else
+            {
+                return null;
+            }
         }
 
-        public Boolean directlyContains(String identifier)
+        public Boolean indexInBounds(List<int> index)
         {
-            if (identifiers.Contains(identifier))
+            if (dimensions.Count != index.Count)
             {
-                return true;
+                return false;
             }
 
-            return false;
-        }
-
-        public void addNewItem(String identifier, HighCData newItem)
-        {
-            identifiers.Add(identifier);
-            data.Add(newItem);
-        }
-        
-        public Boolean changeItem(String identifier, HighCData newValue, out HighCData currentItem)
-        {
-            currentItem = getItem(identifier);
-
-            if(currentItem!=null && newValue != null)
+            int i = 0;
+            while (i < index.Count)
             {
-                return currentItem.setData(newValue.type, newValue.data);
+                if (index[i] < 1 || index[i] > dimensions[i])
+                {
+                    return false;
+                }
+                i++;
             }
-
-            return false;
-        }
-
-        public HighCData getItem(String identifier)
-        {
-            int location = identifiers.IndexOf(identifier);
-
-            Console.WriteLine("Looking for item: " + identifier + " " + location);
-
-            if (location > -1)
-            {
-                return data[location];
-            }
-            else if (parent != null)
-            {
-                return parent.getItem(identifier);
-            }
-
-            return null;
+            return true;
         }
     }
 
+    public class HighCClass
+    {
+
+    }
+
+    public class HighCClassType
+    {
+        public const String
+            QUALIFIER_ABSTRACT = HighCTokenLibrary.ABSTRACT,
+            QUALIFIER_FINAL = HighCTokenLibrary.FINAL,
+            QUALIFIER_NONE = "";
+        
+        public String identifier;
+        public String qualifier;
+        public HighCClassType parent;
+        public List<HighCDataField> privateDataFields;
+        public List<HighCDataField> publicDataFields;
+        public List<HighCMethodDeclaration> privateMethods;
+        public List<HighCMethodDeclaration> publicMethods;
+        
+        public HighCClassType(
+            String name,
+            String qualifierTag,
+            HighCData parentReference,
+            List<HighCDataField> datafieldsPrivate,
+            List<HighCDataField> datafieldsPublic,
+            List<HighCMethodDeclaration> methodsPrivate,
+            List<HighCMethodDeclaration> methodsPublic)
+        {
+            identifier = name;
+            qualifier = qualifierTag;
+            if (parent != null)
+            {
+                parent = (HighCClassType)parentReference.data;
+            }
+            privateDataFields = datafieldsPrivate;
+            publicDataFields = datafieldsPublic;
+            privateMethods = methodsPrivate;
+            publicMethods = methodsPublic;
+        }
+    }
+    
     public class HighCData
     {
         //Error Codes
-        public const int ERROR_TYPE_MISMATCH = 1, ERROR_OUT_OF_RANGE = 2, ERROR_EMPTY_STRING = 3, ERROR_CONSTANT_CHANGED=4, ERROR_ARRAY_DIMENSION_MISMATCH=5, ERROR_INVALID_OPERATOR=6;
+        public const int 
+            ERROR_TYPE_MISMATCH = 1, 
+            ERROR_OUT_OF_RANGE = 2, 
+            ERROR_EMPTY_STRING = 3, 
+            ERROR_CONSTANT_CHANGED=4, 
+            ERROR_ARRAY_DIMENSION_MISMATCH=5, 
+            ERROR_INVALID_OPERATOR=6;
 
         public Object data;
         public HighCType type;
         public Boolean writable;
         public Boolean readable;
+        public String label;
 
         public int errorCode = -1;
 
@@ -8411,49 +9052,53 @@ namespace HighCInterpreterCore
         }
     }
 
-    public class HighCFunctionDeclaration
+    public class HighCDataField
     {
-        public Boolean isPure;
-        public Boolean isRecursive;
-        public String identifier;
-        public List<HighCParameter> parameters;
-        public HighCType returnType;
-        public int blockTokenPosition;
-
-        public HighCFunctionDeclaration(String name, Boolean purity, Boolean recursiveness, List<HighCParameter> newParameters, HighCType returnValue, int startPosition)
-        {
-            identifier = name;
-            isPure = purity;
-            isRecursive = recursiveness;
-            parameters = newParameters;
-            returnType = returnValue;
-            blockTokenPosition = startPosition;
-        }
-
-        public HighCFunctionDeclaration Clone()
-        {
-            return new HighCFunctionDeclaration(identifier, isPure, isRecursive, parameters, returnType, blockTokenPosition);
-        }
-    }
-
-    public class HighCParameter
-    {
-        public String identifier;
-        public Boolean inAllowed;
-        public Boolean outAllowed;
+        public String option;
         public HighCType type;
-        List<String> subscriptParameters;
+        public String id;
+        public List<int> arrayIndice;
 
-        public HighCParameter(String name, HighCType newType, Boolean inStatus, Boolean outStatus, List<String> newSubscriptParameters)
+        public HighCDataField(String newOption, String newId, HighCType newType, List<int> memoryType)
         {
-            identifier = name;
+            option = newOption;
+            id = newId;
             type = newType;
-            inAllowed = inStatus;
-            outAllowed = outStatus;
-            subscriptParameters = newSubscriptParameters;
+            //See Var for memory typing details
+            if(memoryType[0]==-1)
+            {
+                type.memoryType = HighCType.LIST_SUBTYPE;
+            }
+            else if(memoryType[0]==0)
+            {
+                type.memoryType = HighCType.VARIABLE_SUBTYPE;
+            }
+            else
+            {
+                type.memoryType = HighCType.ARRAY_SUBTYPE;
+                arrayIndice = memoryType;
+            }
         }
     }
 
+    public class HighCEnumeration
+    {
+        public String identifier;
+        public HighCEnumerationType type;
+        public int rank;
+
+        public HighCEnumeration(String name, HighCEnumerationType enumerationType, int newRank)
+        {
+            identifier = name;
+            type = enumerationType;
+            rank = newRank;
+        }
+
+        public override String ToString()
+        {
+            return identifier;
+        }
+    }
     public class HighCEnumerationType
     {
         public String identifier;
@@ -8543,81 +9188,148 @@ namespace HighCInterpreterCore
         }
     }
 
-    public class HighCEnumeration
+    class HighCEnvironment
     {
-        public String identifier;
-        public HighCEnumerationType type;
-        public int rank;
+        HighCEnvironment parent;
 
-        public HighCEnumeration(String name, HighCEnumerationType enumerationType, int newRank)
+        public List<String> identifiers = new List<String>();
+        public List<HighCData> data = new List<HighCData>();
+
+        public HighCEnvironment() { }
+
+        public HighCEnvironment(HighCEnvironment newParent)
+        {
+            parent = newParent;
+        }
+
+        public Boolean contains(String identifier)
+        {
+            if (identifiers.Contains(identifier))
+            {
+                return true;
+            }
+
+            if (parent != null &&
+               parent.contains(identifier))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public Boolean directlyContains(String identifier)
+        {
+            if (identifiers.Contains(identifier))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void addNewItem(String identifier, HighCData newItem)
+        {
+            identifiers.Add(identifier);
+            data.Add(newItem);
+        }
+
+        public Boolean changeItem(String identifier, HighCData newValue, out HighCData currentItem)
+        {
+            currentItem = getItem(identifier);
+
+            if (currentItem != null && newValue != null)
+            {
+                return currentItem.setData(newValue.type, newValue.data);
+            }
+
+            return false;
+        }
+
+        public HighCData getItem(String identifier)
+        {
+            int location = identifiers.IndexOf(identifier);
+
+            Console.WriteLine("Looking for item: " + identifier + " " + location);
+
+            if (location > -1)
+            {
+                return data[location];
+            }
+            else if (parent != null)
+            {
+                return parent.getItem(identifier);
+            }
+
+            return null;
+        }
+    }
+
+    public class HighCFunctionDeclaration
+    {
+        public Boolean isPure;
+        public Boolean isRecursive;
+        public String identifier;
+        public List<HighCParameter> parameters;
+        public HighCType returnType;
+        public int blockTokenPosition;
+
+        public HighCFunctionDeclaration(String name, Boolean purity, Boolean recursiveness, List<HighCParameter> newParameters, HighCType returnValue, int startPosition)
         {
             identifier = name;
-            type = enumerationType;
-            rank = newRank;
+            isPure = purity;
+            isRecursive = recursiveness;
+            parameters = newParameters;
+            returnType = returnValue;
+            blockTokenPosition = startPosition;
         }
 
-        public override String ToString()
+        public HighCFunctionDeclaration Clone()
         {
-            return identifier;
+            return new HighCFunctionDeclaration(identifier, isPure, isRecursive, parameters, returnType, blockTokenPosition);
         }
     }
 
-    public class HighCArray
+    public class HighCMethodDeclaration
     {
-        public HighCData[] array;
-        public List<int> dimensions;
-        public Boolean isSeedValue;
+        public Boolean isPure;
+        public Boolean isRecursive;
+        public String identifier;
+        public String option;
+        public List<HighCParameter> parameters;
+        public HighCType returnType;
+        public int blockTokenPosition;
 
-        public HighCArray(HighCData[] newArray, List<int> newSizes, Boolean isSeed=false)
+        public HighCMethodDeclaration(String name, String newOption, Boolean purity, Boolean recursiveness, List<HighCParameter> newParameters, HighCType returnValue, int startPosition)
         {
-            array = newArray;
-            dimensions = newSizes;
-            isSeedValue = isSeed;
-        }
-
-        public HighCData getItemAt(List<int> index)
-        {
-            int offset = 0;
-            int dimensionSizeBuffer = 1;
-            int i = index.Count - 1;
-            while(i>-1)
-            {
-                offset = offset+index[i] * dimensionSizeBuffer;
-                dimensionSizeBuffer = dimensionSizeBuffer * dimensions[i];
-                i--;
-            }
-
-            if (offset < array.Length &&
-                offset >= 0)
-            {
-                return array[offset];
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public Boolean indexInBounds(List<int> index)
-        {
-            if(dimensions.Count!=index.Count)
-            {
-                return false;
-            }
-
-            int i = 0;
-            while(i<index.Count)
-            {
-                if(index[i]<1 || index[i]>dimensions[i])
-                {
-                    return false;
-                }
-                i++;
-            }
-            return true;
+            identifier = name;
+            option = newOption;
+            isPure = purity;
+            isRecursive = recursiveness;
+            parameters = newParameters;
+            returnType = returnValue;
+            blockTokenPosition = startPosition;
         }
     }
 
+    public class HighCParameter
+    {
+        public String identifier;
+        public Boolean inAllowed;
+        public Boolean outAllowed;
+        public HighCType type;
+        List<String> subscriptParameters;
+
+        public HighCParameter(String name, HighCType newType, Boolean inStatus, Boolean outStatus, List<String> newSubscriptParameters)
+        {
+            identifier = name;
+            type = newType;
+            inAllowed = inStatus;
+            outAllowed = outStatus;
+            subscriptParameters = newSubscriptParameters;
+        }
+    }
+    
     public class HighCType
     {
         //TYPES

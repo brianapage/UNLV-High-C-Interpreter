@@ -40,18 +40,33 @@ namespace HighCInterpreterCore
                 "{" + Environment.NewLine +
                 "" + Environment.NewLine +
                 "}";
-
+            
             textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
                 "//User Constants" + Environment.NewLine +
                 "//Global Variables" + Environment.NewLine +
                 "//Classes" + Environment.NewLine +
+                "final class testClass" + Environment.NewLine +
+                "private" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "   //Data Fields" + Environment.NewLine +
+                "   last INT:1...10 width, height" + Environment.NewLine +
+                "   //Methods" + Environment.NewLine +
+                "   last pure recurs method calculateAreas(INT val1, INT val2) => INT { return 3 }" + Environment.NewLine +
+                "}" + Environment.NewLine +
+                "public" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "   //Data Fields" + Environment.NewLine +
+                "   INT areas[3]" + Environment.NewLine +
+                "   //Methods" + Environment.NewLine +
+                "   method getArea() => INT { return areas[3] }" + Environment.NewLine +
+                "}" + Environment.NewLine +
                 "//Functions" + Environment.NewLine +
                 "//Main" + Environment.NewLine +
                 Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                "   out ((3=3) | false)" + Environment.NewLine +
+                "   " + Environment.NewLine +
                 "}";
             //*/
 
