@@ -2727,12 +2727,15 @@ namespace HighCInterpreterCore
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_datafield"); }
             int storeToken = currentToken;
             dataFields = new List<HighCDataField>();
-            /*
-             <option> <type> <var list>
-            */
 
-            String option;
-            if (HC_option(out option)) { } //Will always return true
+            /*
+            create <type> <var list>
+            */
+            
+            if(matchTerminal(HighCTokenLibrary.CREATE)!=true)
+            {
+                return false;
+            }
 
             HighCType type;
             if (HC_type(out type) == false)
@@ -2745,7 +2748,7 @@ namespace HighCInterpreterCore
             List<int> memoryType;
             if (HC_var(out id, out memoryType))
             {
-                dataFields.Add(new HighCDataField(option, id, type, memoryType));
+                dataFields.Add(new HighCDataField(id, type, memoryType));
                 storeToken = currentToken;
 
                 while (matchTerminal(HighCTokenLibrary.COMMA))
@@ -2755,7 +2758,7 @@ namespace HighCInterpreterCore
                         error("Class Data Field Declaration: Expected another identifier after the comma.");
                         return false;
                     }
-                    dataFields.Add(new HighCDataField(option, id, type, memoryType));
+                    dataFields.Add(new HighCDataField(id, type, memoryType));
                     storeToken = currentToken;
                 }
                 currentToken = storeToken;
@@ -2766,7 +2769,7 @@ namespace HighCInterpreterCore
                 return false;
             }
 
-            Console.WriteLine(currentToken + " <data field> -> <option> <type> <var list> -> " + option + " " + type + " IDs: " + dataFields.Count);
+            Console.WriteLine(currentToken + " <data field> -> <option> <type> <var list> -> " + type + " IDs: " + dataFields.Count);
             return true;
         }
 
@@ -9054,14 +9057,12 @@ namespace HighCInterpreterCore
 
     public class HighCDataField
     {
-        public String option;
         public HighCType type;
         public String id;
         public List<int> arrayIndice;
 
-        public HighCDataField(String newOption, String newId, HighCType newType, List<int> memoryType)
+        public HighCDataField(String newId, HighCType newType, List<int> memoryType)
         {
-            option = newOption;
             id = newId;
             type = newType;
             //See Var for memory typing details
