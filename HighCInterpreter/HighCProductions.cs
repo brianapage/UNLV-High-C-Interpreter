@@ -4527,12 +4527,21 @@ namespace HighCInterpreterCore
             {
                 return false;
             }
-
-            if(HC_constant(out constant)==false)
+            else
             {
-                constant.label = id;
-                return false;
+                if(matchTerminal(HighCTokenLibrary.EQUAL,true)==false)
+                {
+                    error();
+                    return false;
+                }
+
+                if (HC_constant(out constant) == false)
+                {
+                    constant.label = id;
+                    return false;
+                }
             }
+
 
             Console.WriteLine(currentToken + " <initiated field> -> <data – field id> = <constant> ->" + id + " " + constant);
             return true;
@@ -4597,8 +4606,10 @@ namespace HighCInterpreterCore
                         error("Declaration: Abstract classes are not a valid variable type.");
                         return false;
                     }
-
+                    
                     //Check that all fields are initialized
+
+                    
                     //Create Class Object
                     //Add Class Object to Environment
                 }

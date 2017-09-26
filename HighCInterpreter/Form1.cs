@@ -50,14 +50,14 @@ namespace HighCInterpreterCore
                 "private" + Environment.NewLine +
                 "{" + Environment.NewLine +
                 "   //Data Fields" + Environment.NewLine +
-                "   last INT:1...10 width, height" + Environment.NewLine +
+                "   create INT:1...10 width, height" + Environment.NewLine +
                 "   //Methods" + Environment.NewLine +
                 "   last pure recurs method calculateAreas(INT val1, INT val2) => INT { return 3 }" + Environment.NewLine +
                 "}" + Environment.NewLine +
                 "public" + Environment.NewLine +
                 "{" + Environment.NewLine +
                 "   //Data Fields" + Environment.NewLine +
-                "   INT areas[3]" + Environment.NewLine +
+                "   create INT areas[3]" + Environment.NewLine +
                 "   //Methods" + Environment.NewLine +
                 "   method getArea() => INT { return areas[3] }" + Environment.NewLine +
                 "}" + Environment.NewLine +
