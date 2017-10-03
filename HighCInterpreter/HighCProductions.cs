@@ -31,15 +31,6 @@ namespace HighCInterpreterCore
         {
             tokenList = newTokens;
             currentToken = 0;
-            /*
-            primitiveEnvironment = new HighCEnvironment();
-            List<String> keywords = HighCTokenLibrary.getKeywords();
-            foreach(String keyword in keywords)
-            {
-                primitiveEnvironment.addNewItem(keyword, new HighCData("Keyword", keyword));
-            }
-            globalEnvironment = new HighCEnvironment(primitiveEnvironment);
-            */
             globalEnvironment = new HighCEnvironment();
             currentEnvironment = globalEnvironment;
             nonRecursiveFunctionCalls = new List<HighCFunctionDeclaration>();
@@ -228,8 +219,8 @@ namespace HighCInterpreterCore
             int storeToken = currentToken;
 
             /*
-                +
-                -
+             +
+             -
              */
 
             if (matchTerminal(HighCTokenLibrary.MINUS_SIGN))
@@ -993,32 +984,21 @@ namespace HighCInterpreterCore
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_array_variable"); }
             int storeToken = currentToken;
             value = null;
-            String identifier;
 
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-
-                if (temp == null)
-                {
-                    error("Array Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Array Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isArray())
-                {
-
-                    value = temp;
-                    Console.WriteLine(currentToken + " <array variable> -> <id> -> " + identifier + " " + value);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if (dataBuffer.isArray() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <array variable> -> <variable> -> " + value);
+            value = dataBuffer;
+            return true;
         }
 
         private Boolean HC_assignment()
@@ -1039,7 +1019,7 @@ namespace HighCInterpreterCore
 
             if (matchTerminal(HighCTokenLibrary.SET))
             {
-                if (HC_variable(out identifier))
+                if (HC_id(out identifier))
                 {
                     if (pureStatus == true)
                     {
@@ -1320,36 +1300,6 @@ namespace HighCInterpreterCore
                                         return false;
                                     }
                                 }
-
-                                /*else if (arraySliceLength == 1)
-                                {
-                                    
-                                    if (value.isArray())
-                                    {
-                                        if (((HighCArray)value.data).array.Length == 1)
-                                        {
-                                            value = ((HighCArray)value.data).array[0];
-                                        }
-                                        else
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The length of the array (" + ((HighCArray)value.data).array.Length + ") must match the length of the slice (" + arraySliceLength + ").");
-                                            return false;
-                                        }
-                                    }
-                                    else if (value.isList())
-                                    {
-                                        if (((List<HighCData>)value.data).Count == 1)
-                                        {
-                                            value = ((List<HighCData>)value.data)[0];
-                                        }
-                                        else
-                                        {
-                                            error(HighCTokenLibrary.SET + " (\"" + identifier + "\"): The length of the list (" + ((List<HighCData>)value.data).Count + ") must match the length of the slice (" + arraySliceLength + ").");
-                                            return false;
-                                        }
-                                    }
-                                }*/
-
                             }
                             else if (dimensions.Count > 0)
                             {
@@ -1894,93 +1844,22 @@ namespace HighCInterpreterCore
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_boolean_variable"); }
             int storeToken = currentToken;
             value = false;
-            String identifier;
 
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer)==false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-                storeToken = currentToken;
-
-                if (temp == null)
-                {
-                    error("Boolean Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Boolean Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isBoolean())
-                {
-                    if (temp.isList())
-                    {
-                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                        {
-                            int index;
-                            int length;
-                            if (HC_slice(out index, out length))
-                            {
-                                if (length != 1)
-                                {
-                                    error("Boolean List: The length of the slice from the list must be 1.");
-                                    return false;
-                                }
-
-                                if (index + length - 1 > temp.getCount())
-                                {
-                                    error("Boolean List: The slice is not a subset of the list.");
-                                    return false;
-                                }
-
-                                value = (Boolean)((List<HighCData>)(temp.data))[index - 1].data;
-                                Console.WriteLine(currentToken + " <boolean variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                                return true;
-                            }
-                            else
-                            {
-                                error();
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    //<array – variable> <subscript – expr>*
-                    else if (temp.isArray())
-                    {
-                        storeToken = currentToken;
-                        int intBuffer;
-                        List<int> index = new List<int>();
-                        while (HC_subscript_expression(out intBuffer))
-                        {
-                            storeToken = currentToken;
-                            index.Add(intBuffer);
-                        }
-                        currentToken = storeToken;
-
-                        if (((HighCArray)(temp.data)).indexInBounds(index))
-                        {
-                            value = (Boolean)(((HighCArray)(temp.data)).getItemAt(index).data);
-                            Console.WriteLine(currentToken + " <boolean variable> -> <id><subscript>* -> " + identifier + " " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("Boolean Array: The specified array index goes outside the bounds of the array.");
-                            return false;
-                        }
-                    }
-
-                    value = (Boolean)temp.data;
-                    Console.WriteLine(currentToken + " <boolean variable> -> <id> -> " + identifier + " " + value);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if(dataBuffer.isBoolean()==false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <boolean variable> -> <variable> -> " + value);
+            value = (Boolean)dataBuffer.data;
+            return true;
+            
         }
 
 
@@ -2152,91 +2031,21 @@ namespace HighCInterpreterCore
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_character_variable"); }
             int storeToken = currentToken;
             value = "";
-            String identifier;
 
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-
-                if (temp == null)
-                {
-                    error("Character Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Character Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isCharacter())
-                {
-                    if (temp.isList())
-                    {
-                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                        {
-                            int index;
-                            int length;
-                            if (HC_slice(out index, out length))
-                            {
-                                if (length != 1)
-                                {
-                                    error("Character List: The length of the slice from the list must be 1.");
-                                    return false;
-                                }
-
-                                if (index + length - 1 > temp.getCount())
-                                {
-                                    error("Character List: The slice is not a subset of the list.");
-                                    return false;
-                                }
-
-                                value = (String)((List<HighCData>)(temp.data))[index - 1].data;
-                                Console.WriteLine(currentToken + " <character variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                                return true;
-                            }
-                            else
-                            {
-                                error();
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    //<array – variable> <subscript – expr>*
-                    else if (temp.isArray())
-                    {
-                        storeToken = currentToken;
-                        int intBuffer;
-                        List<int> index = new List<int>();
-                        while (HC_subscript_expression(out intBuffer))
-                        {
-                            storeToken = currentToken;
-                            index.Add(intBuffer);
-                        }
-                        currentToken = storeToken;
-
-                        if (((HighCArray)(temp.data)).indexInBounds(index))
-                        {
-                            value = (String)(((HighCArray)(temp.data)).getItemAt(index).data);
-                            Console.WriteLine(currentToken + " <character variable> -> <id><subscript>* -> " + identifier + " " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("Character Array: The specified array index goes outside the bounds of the array.");
-                            return false;
-                        }
-                    }
-                    value = (String)temp.data;
-                    Console.WriteLine(currentToken + " <character variable> -> <id> -> " + identifier + " " + value);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if (dataBuffer.isCharacter() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <character variable> -> <variable> -> " + value);
+            value = (String)dataBuffer.data;
+            return true;
         }
 
         private Boolean HC_choice()
@@ -2601,10 +2410,10 @@ namespace HighCInterpreterCore
             int storeToken = currentToken;
 
             /*
-             * <object – constant>
-                <array – constant>
-                <list – constant>
-                <scalar – constant>
+             <scalar – constant>
+             <list – constant>
+             <object – constant>
+             <array – constant>
              */
 
             if (HC_scalar_constant(out value))
@@ -2630,25 +2439,16 @@ namespace HighCInterpreterCore
             }
 
             currentToken = storeToken;
-            if (HC_array_constant(out value))
+            if (HC_object_constant(out value))
             {
-                Console.WriteLine(currentToken + " <constant> -> <array constant>" + " -> " + value);
+                Console.WriteLine(currentToken + " <constant> -> <object constant>" + " -> " + value);
                 return true;
             }
 
             currentToken = storeToken;
-            if(HC_object_constant(out values))
+            if (HC_array_constant(out value))
             {
-                if (values.Count > 0)
-                {
-                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, values[0].type.dataType, values[0].type.objectReference), values);
-                }
-                else
-                {
-                    value = new HighCData(new HighCType(HighCType.LIST_SUBTYPE, null), values);
-                }
-
-                Console.WriteLine(currentToken + " <constant> -> <object constant>" + " -> " + value);
+                Console.WriteLine(currentToken + " <constant> -> <array constant>" + " -> " + value);
                 return true;
             }
 
@@ -3216,11 +3016,16 @@ namespace HighCInterpreterCore
                         {
                             if (enumBuffer1.rank <= enumBuffer2.rank)
                             {
-                                type = new HighCType(HighCType.VARIABLE_SUBTYPE,
-                                                    HighCType.ENUMERATION_INSTANCE,
-                                                    enumType,
-                                                    new HighCData(HighCType.ENUMERATION_INSTANCE, enumBuffer1),
-                                                    new HighCData(HighCType.ENUMERATION_INSTANCE, enumBuffer2));
+                                type = new HighCType(
+                                    HighCType.VARIABLE_SUBTYPE,
+                                    HighCType.ENUMERATION_INSTANCE,
+                                    enumType,
+                                    new HighCData(
+                                        HighCType.ENUMERATION_INSTANCE, 
+                                        enumBuffer1),
+                                    new HighCData(
+                                        HighCType.ENUMERATION_INSTANCE, 
+                                        enumBuffer2));
 
                                 Console.WriteLine(currentToken + " <discrete type> -> " + type);
                                 return true;
@@ -3246,7 +3051,10 @@ namespace HighCInterpreterCore
                 }
                 else
                 {
-                    type = new HighCType(HighCType.VARIABLE_SUBTYPE, HighCType.ENUMERATION_INSTANCE, enumType);
+                    type = new HighCType(
+                        HighCType.VARIABLE_SUBTYPE, 
+                        HighCType.ENUMERATION_INSTANCE, 
+                        enumType);
                     currentToken = storeToken;
                     Console.WriteLine(currentToken + " <discrete type> -> " + type);
                     return true;
@@ -3268,6 +3076,14 @@ namespace HighCInterpreterCore
 
             if (HC_scalar_constant(out value))
             {
+                Console.WriteLine(currentToken + " <element - constant> -> <scalar constant> ->" + value);
+                return true;
+            }
+
+            currentToken = storeToken;
+            if (HC_object_constant(out value))
+            {
+                Console.WriteLine(currentToken + " <element - constant> -> <object constant> ->" + value);
                 return true;
             }
 
@@ -3581,90 +3397,22 @@ namespace HighCInterpreterCore
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_enumeration_variable"); }
             int storeToken = currentToken;
-
-            /*
-            <id>
-            <array – variable> <subscript – expr>* [ <slice> ]
-            <list – variable> @ <slice>
-            <object – variable>.<variable>
-             */
             value = null;
-            String identifier = "";
 
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                if (currentEnvironment.contains(identifier))
-                {
-                    HighCData temp = currentEnvironment.getItem(identifier);
-                    if (temp.isEnumeration())
-                    {
-                        if (temp.isList())
-                        {
-                            if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                            {
-                                int index;
-                                int length;
-                                if (HC_slice(out index, out length))
-                                {
-                                    if (length != 1)
-                                    {
-                                        error("Enumeration List: The length of the slice from the list must be 1.");
-                                        return false;
-                                    }
-
-                                    if (index + length - 1 > temp.getCount())
-                                    {
-                                        error("Enumeration List: The slice is not a subset of the list.");
-                                        return false;
-                                    }
-
-                                    value = (HighCEnumeration)((List<HighCData>)(temp.data))[index - 1].data;
-                                    Console.WriteLine(currentToken + " <enumeration variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                                    return true;
-                                }
-                                else
-                                {
-                                    error();
-                                    return false;
-                                }
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        //<array – variable> <subscript – expr>*
-                        else if (temp.isArray())
-                        {
-                            storeToken = currentToken;
-                            int intBuffer;
-                            List<int> index = new List<int>();
-                            while (HC_subscript_expression(out intBuffer))
-                            {
-                                storeToken = currentToken;
-                                index.Add(intBuffer);
-                            }
-                            currentToken = storeToken;
-
-                            if (((HighCArray)(temp.data)).indexInBounds(index))
-                            {
-                                value = (HighCEnumeration)(((HighCArray)(temp.data)).getItemAt(index).data);
-                                Console.WriteLine(currentToken + " <enumeration variable> -> <id><subscript>* -> " + identifier + " " + value);
-                                return true;
-                            }
-                            else
-                            {
-                                error("Enumeration Array: The specified array index goes outside the bounds of the array.");
-                                return false;
-                            }
-                        }
-                        value = (HighCEnumeration)(temp.data);
-                        Console.WriteLine(currentToken + " <enumeration variable> -> <id> -> " + identifier + " " + value);
-                        return true;
-                    }
-                }
+                return false;
             }
-            return false;
+
+            if (dataBuffer.isEnumeration() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <enum variable> -> <variable> -> " + value);
+            value = (HighCEnumeration)dataBuffer.data;
+            return true;
         }
 
         private Boolean HC_equality_op(out String opType)
@@ -3847,91 +3595,20 @@ namespace HighCInterpreterCore
             int storeToken = currentToken;
             value = 0.0;
 
-            String identifier;
-
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-
-                if (temp == null)
-                {
-                    error("Float Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Float Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isFloat())
-                {
-                    if (temp.isList())
-                    {
-                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                        {
-                            int index;
-                            int length;
-                            if (HC_slice(out index, out length))
-                            {
-                                if (length != 1)
-                                {
-                                    error("Float List: The length of the slice from the list must be 1.");
-                                    return false;
-                                }
-
-                                if (index + length - 1 > temp.getCount())
-                                {
-                                    error("Float List: The slice is not a subset of the list.");
-                                    return false;
-                                }
-
-                                value = (Double)((List<HighCData>)(temp.data))[index - 1].data;
-                                Console.WriteLine(currentToken + " <float variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                                return true;
-                            }
-                            else
-                            {
-                                error();
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    //<array – variable> <subscript – expr>*
-                    else if (temp.isArray())
-                    {
-                        storeToken = currentToken;
-                        int intBuffer;
-                        List<int> index = new List<int>();
-                        while (HC_subscript_expression(out intBuffer))
-                        {
-                            storeToken = currentToken;
-                            index.Add(intBuffer);
-                        }
-                        currentToken = storeToken;
-
-                        if (((HighCArray)(temp.data)).indexInBounds(index))
-                        {
-                            value = (Double)(((HighCArray)(temp.data)).getItemAt(index).data);
-                            Console.WriteLine(currentToken + " <float variable> -> <id><subscript>* -> " + identifier + " " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("Float Array: The specified array index goes outside the bounds of the array.");
-                            return false;
-                        }
-                    }
-                    value = (Double)temp.data;
-                    Console.WriteLine(currentToken + " <float variable> -> <id> -> " + identifier + " " + value);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if (dataBuffer.isFloat() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <float variable> -> <variable> -> " + value);
+            value = (Double)dataBuffer.data;
+            return true;
         }
 
         private Boolean HC_formal_parameters(out List<HighCParameter> parameters)
@@ -4034,7 +3711,7 @@ namespace HighCInterpreterCore
                                                 if (skipBlock())
                                                 {
                                                     HighCFunctionDeclaration newFunction = new HighCFunctionDeclaration(functionName, pure, recursive, parameters, resultType, startPosition);
-                                                    HighCData newData = new HighCData(HighCTokenLibrary.FUNCTION, newFunction);
+                                                    HighCData newData = new HighCData(HighCType.FUNCTION_DECLARATION_TYPE, newFunction);
                                                     if (currentEnvironment.contains(functionName) == false)
                                                     {
                                                         currentEnvironment.addNewItem(functionName, newData);
@@ -4104,7 +3781,7 @@ namespace HighCInterpreterCore
             <func – expr> ( <expr list> )
             <func – expr> ( )
              */
-
+            
             HighCFunctionDeclaration function;
             HighCEnvironment functionEnvironment = new HighCEnvironment(globalEnvironment);
             HighCEnvironment storeEnvironment;
@@ -4175,7 +3852,7 @@ namespace HighCInterpreterCore
                         else
                         {
                             String identifier;
-                            if (HC_variable(out identifier))
+                            if (HC_id(out identifier))
                             {
                                 if (currentEnvironment.contains(identifier))
                                 {
@@ -4514,7 +4191,7 @@ namespace HighCInterpreterCore
         
         private Boolean HC_initiated_field(out HighCData constant)
         {
-            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_initiated_variable"); }
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_initiated_field"); }
             int storeToken = currentToken;
             constant = null;
 
@@ -4529,6 +4206,12 @@ namespace HighCInterpreterCore
             }
             else
             {
+                //Checking for enums
+                if(globalEnvironment.contains(id))
+                {
+                    return false;
+                }
+
                 if(matchTerminal(HighCTokenLibrary.EQUAL,true)==false)
                 {
                     error();
@@ -4537,13 +4220,13 @@ namespace HighCInterpreterCore
 
                 if (HC_constant(out constant) == false)
                 {
-                    constant.label = id;
                     return false;
                 }
+
+                constant.label = id;
             }
-
-
-            Console.WriteLine(currentToken + " <initiated field> -> <data – field id> = <constant> ->" + id + " " + constant);
+            
+            Console.WriteLine(currentToken + " <initiated field> -> <data – field id> = <constant> ->" + constant.label + " " + constant);
             return true;
         }
 
@@ -4598,28 +4281,36 @@ namespace HighCInterpreterCore
                         return false;
                     }
                 }
-
-                if(expectedType.isClassType())
+                
+                if(expectedType.isClass())
                 {
-                    if(((HighCClassType)expectedType.objectReference).qualifier==HighCClassType.QUALIFIER_ABSTRACT)
+                    if (((HighCClassType)expectedType.objectReference).qualifier == HighCClassType.QUALIFIER_ABSTRACT)
                     {
                         error("Declaration: Abstract classes are not a valid variable type.");
                         return false;
                     }
-                    
-                    //Check that all fields are initialized
 
-                    
-                    //Create Class Object
-                    //Add Class Object to Environment
+                    if (constantValue.isList())
+                    {
+                        if(((List<HighCData>)constantValue.data).Count==0)
+                        {
+                            constantValue.type.memoryType = HighCType.VARIABLE_SUBTYPE;
+                            constantValue.type.dataType = HighCType.FIELDS_INITIALIZATION_LIST;
+                        }
+                    }
                 }
 
                 //Variable
                 if (variableSubtype[0] == 0)
                 {
                     variable.type.memoryType = HighCType.VARIABLE_SUBTYPE;
+
                     if (variable.setData(constantValue.type, constantValue.data, true) == false)
                     {
+                        if(variable.errorMessage!="")
+                        {
+                            error("Declaration \"" + variableName + "\": "+ variable.errorMessage);
+                        }
                         if (variable.errorCode == HighCData.ERROR_TYPE_MISMATCH)
                         {
                             error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + ">.");
@@ -4627,6 +4318,11 @@ namespace HighCInterpreterCore
                         else if (variable.errorCode == HighCData.ERROR_OUT_OF_RANGE)
                         {
                             error("Declaration \"" + variableName + "\": This variable must be initialized with a value between " + (variable.type.minimum) + " and " + (variable.type.maximum) + ".");
+                        }
+                        //Class Initialization Fail
+                        else if(variable.errorCode == HighCData.ERROR_FIELD_INITIALIZATION_FAILED)
+                        {
+                            error("Declaration \"" + variableName + "\": One or more fields of the class could not be initialized with the given values.");
                         }
                         return false;
                     }
@@ -4640,7 +4336,8 @@ namespace HighCInterpreterCore
                 //List
                 if (variableSubtype[0] == -1)
                 {
-                    if (constantValue.isList() == false)
+                    if (constantValue.isList() == false ||
+                        constantValue.isFieldInitialization())
                     {
                         error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + "@>.");
                         return false;
@@ -5000,104 +4697,23 @@ namespace HighCInterpreterCore
         private Boolean HC_integer_variable(out Int64 value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_integer_variable"); }
-
             int storeToken = currentToken;
             value = 0;
-            /*
-            <id>
-            <string – variable> $ <slice>
-            <array – variable> <subscript – expr>*
-            <list – variable> @ <slice>
-            <object – variable>.<variable>
-             */
 
-            String identifier;
-
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-
-                if (temp == null)
-                {
-                    error("Integer Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Integer Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isInteger())
-                {
-                    //< list – variable > @ < slice >
-                    if (temp.isList())
-                    {
-                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                        {
-                            int index;
-                            int length;
-                            if (HC_slice(out index, out length))
-                            {
-                                if (length != 1)
-                                {
-                                    error("Integer List: The length of the slice from the list must be 1.");
-                                    return false;
-                                }
-
-                                if (index + length - 1 > temp.getCount())
-                                {
-                                    error("Integer List: The slice is not a subset of the list.");
-                                    return false;
-                                }
-
-                                value = (Int64)((List<HighCData>)(temp.data))[index - 1].data;
-                                Console.WriteLine(currentToken + " <integer variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                                return true;
-                            }
-                            else
-                            {
-                                error();
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    //<array – variable> <subscript – expr>*
-                    else if (temp.isArray())
-                    {
-                        storeToken = currentToken;
-                        int intBuffer;
-                        List<int> index = new List<int>();
-                        while (HC_subscript_expression(out intBuffer))
-                        {
-                            storeToken = currentToken;
-                            index.Add(intBuffer);
-                        }
-                        currentToken = storeToken;
-
-                        if (((HighCArray)(temp.data)).indexInBounds(index))
-                        {
-                            value = (Int64)(((HighCArray)(temp.data)).getItemAt(index).data);
-                            Console.WriteLine(currentToken + " <integer variable> -> <id><subscript>* -> " + identifier + " " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("Integer Array: The specified array index goes outside the bounds of the array.");
-                            return false;
-                        }
-                    }
-
-                    value = (Int64)temp.data;
-                    Console.WriteLine(currentToken + " <integer variable> -> <id> -> " + identifier + " " + value);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if (dataBuffer.isInteger() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <integer variable> -> <variable> -> " + value);
+            value = (Int64)dataBuffer.data;
+            return true;
         }
 
         private Boolean HC_iterator()
@@ -6009,18 +5625,17 @@ namespace HighCInterpreterCore
 
             if (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
             {
-                values = new List<HighCData>();
-
                 storeToken = currentToken;
-
-                //Allows for nested lists for arrays
-                if (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                
+                //Solves an ambiguity with class field initializations ie <object constant>
+                HighCData newElement;
+                if (HC_initiated_field(out newElement))
                 {
                     return false;
                 }
 
+                values = new List<HighCData>();
                 currentToken = storeToken;
-                HighCData newElement;
                 if (HC_element_constant(out newElement))
                 {
                     storeToken = currentToken;
@@ -6040,6 +5655,13 @@ namespace HighCInterpreterCore
                             return false;
                         }
                     }
+                }
+
+                //Allows for nested lists for arrays
+                currentToken = storeToken;
+                if (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
+                {
+                    return false;
                 }
 
                 currentToken = storeToken;
@@ -6156,69 +5778,26 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_list_variable(out List<HighCData> values)
+        private Boolean HC_list_variable(out List<HighCData> value)
         {
-            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_integer_variable"); }
-
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_list_variable"); }
             int storeToken = currentToken;
-            values = null;
-            /*
-            <id>
-            <array – variable> <subscript – expr>* [ <slice> ]
-            <list – variable> @ <slice>
-            <object – variable>.<variable>
-             */
+            value = null;
 
-            String identifier;
-
-            if (HC_id(out identifier))
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-
-                if (temp == null)
-                {
-                    error("List Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Integer Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isList())
-                {
-                    values = (List<HighCData>)temp.data;
-                    storeToken = currentToken;
-                    if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                    {
-                        int index, length;
-                        if (HC_slice(out index, out length))
-                        {
-                            if (index + length - 1 <= values.Count)
-                            {
-                                values = values.GetRange(index - 1, length);
-                                Console.WriteLine(currentToken + " <list variable> -> <id>@<slice> -> " + identifier + " " + values);
-                                return true;
-                            }
-                            else if (values.Count == 0)
-                            {
-                                error("List Variable: Empty lists cannot be accessed in this way.");
-                                return false;
-                            }
-                            else
-                            {
-                                error("List Variable: The specified slice must be between 1 and " + values.Count + ".");
-                                return false;
-                            }
-                        }
-                    }
-                    currentToken = storeToken;
-                    Console.WriteLine(currentToken + " <list variable> -> <id> -> " + identifier + " " + values);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if (dataBuffer.isList() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <list variable> -> <variable> -> " + value);
+            value = (List<HighCData>)dataBuffer.data;
+            return true;
         }
 
         private Boolean HC_loop()
@@ -6475,11 +6054,12 @@ namespace HighCInterpreterCore
             return false;
         }
         
-        private Boolean HC_object_constant(out List<HighCData> constants)
+        private Boolean HC_object_constant(out HighCData value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_object_constant"); }
             int storeToken = currentToken;
-            constants = new List<HighCData>();
+            List<HighCData> constants = new List<HighCData>();
+            value = null;
             /*
             { }
             { <initiated – field list> }
@@ -6507,17 +6087,18 @@ namespace HighCInterpreterCore
                         }
                     }
                 }
-                currentToken = storeToken;
 
-                if(matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET,true))
+                currentToken = storeToken;
+                if(matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET))
                 {
+                    HighCType initializedFieldType = new HighCType(
+                        HighCType.VARIABLE_SUBTYPE,
+                        HighCType.FIELDS_INITIALIZATION_LIST);
+                    value = new HighCData(
+                        initializedFieldType,
+                        constants);
                     Console.WriteLine(currentToken + " <object constant> -> { <initiated – field list> } -> Constants Found: " + constants.Count);
                     return true;
-                }
-                else
-                {
-                    error();
-                    return false;
                 }
             }
 
@@ -7657,91 +7238,22 @@ namespace HighCInterpreterCore
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_string_variable"); }
             int storeToken = currentToken;
-            String identifier;
             value = "";
-            if (HC_id(out identifier))
+
+            HighCData dataBuffer;
+            if (HC_variable(out dataBuffer) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
-
-                if (temp == null)
-                {
-                    error("String Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("String Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
-                else if (temp.isString())
-                {
-                    if (temp.isList())
-                    {
-                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                        {
-                            int index;
-                            int length;
-                            if (HC_slice(out index, out length))
-                            {
-                                if (length != 1)
-                                {
-                                    error("String List: The length of the slice from the list must be 1.");
-                                    return false;
-                                }
-
-                                if (index + length - 1 > temp.getCount())
-                                {
-                                    error("String List: The slice is not a subset of the list.");
-                                    return false;
-                                }
-
-                                value = (String)((List<HighCData>)(temp.data))[index - 1].data;
-                                Console.WriteLine(currentToken + " <string variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                                return true;
-                            }
-                            else
-                            {
-                                error();
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    //<array – variable> <subscript – expr>*
-                    else if (temp.isArray())
-                    {
-                        storeToken = currentToken;
-                        int intBuffer;
-                        List<int> index = new List<int>();
-                        while (HC_subscript_expression(out intBuffer))
-                        {
-                            storeToken = currentToken;
-                            index.Add(intBuffer);
-                        }
-                        currentToken = storeToken;
-
-                        if (((HighCArray)(temp.data)).indexInBounds(index))
-                        {
-                            value = (String)(((HighCArray)(temp.data)).getItemAt(index).data);
-                            Console.WriteLine(currentToken + " <string variable> -> <id><subscript>* -> " + identifier + " " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("String Array: The specified array index goes outside the bounds of the array.");
-                            return false;
-                        }
-                    }
-                    value = (String)temp.data;
-                    Console.WriteLine(currentToken + " <string variable> -> <id> -> " + identifier + " " + value);
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            if (dataBuffer.isString() == false)
+            {
+                return false;
+            }
+
+            Console.WriteLine(currentToken + " <string variable> -> <variable> -> " + value);
+            value = (String)dataBuffer.data;
+            return true;
         }
 
         private Boolean HC_subscript(out int value)
@@ -7870,8 +7382,13 @@ namespace HighCInterpreterCore
             String className;
             if (HC_class_name(out className))
             {
-                HighCData classData = globalEnvironment.getItem(className);
-                type = classData.type;
+                HighCData classDeclaration = globalEnvironment.getItem(className);
+
+                //Create an instantiation type based on declaration type
+                type = new HighCType(
+                    HighCType.VARIABLE_SUBTYPE,
+                    HighCType.CLASS_INSTANCE,
+                    classDeclaration.data); //Reference to class declaration object
 
                 Console.WriteLine(currentToken + " <type> -> <class name> ->" + type);
                 return true;
@@ -8004,6 +7521,8 @@ namespace HighCInterpreterCore
                                         }
                                     }
 
+
+                                    Console.WriteLine(currentToken + " <user constant> -> enum <id> = { <id list> } -> " + identifier);
                                     return true;
                                 }
                                 else
@@ -8081,7 +7600,7 @@ namespace HighCInterpreterCore
                         return false;
                     }
 
-                    Console.WriteLine(currentToken + " <declaration> -> const <type><initiated variable>,...,<initiated variable> -> " + declaredType);
+                    Console.WriteLine(currentToken + " <user constant> -> const <type><initiated variable>,...,<initiated variable> -> " + declaredType);
 
                     return true;
                 }
@@ -8146,12 +7665,11 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        private Boolean HC_variable(out String identifier)
+        private Boolean HC_variable(out HighCData value)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_variable"); }
             int storeToken = currentToken;
-            identifier = "";
-
+            value = null;
             /*
             <id>
             <string – variable> $ <slice>
@@ -8160,12 +7678,128 @@ namespace HighCInterpreterCore
             <object – variable>.<variable>
              */
 
+            String identifier;
             if (HC_id(out identifier))
             {
-                Console.WriteLine(currentToken + " <variable> -> <id> ->" + identifier);
+                HighCData temp = currentEnvironment.getItem(identifier);
+
+                if (temp == null)
+                {
+                    error("Variable: The specified variable \"" + identifier + "\" could not be found.");
+                    return false;
+                }
+                else if (temp.readable == false)
+                {
+                    error("Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
+                    return false;
+                }
+
+                
+                storeToken = currentToken;
+                while (
+                    temp.isClass() && 
+                    matchTerminal(HighCTokenLibrary.PERIOD) == true)
+                {
+                    String fieldID;
+                    HighCClass classInstance = (HighCClass)temp.data;
+                    if (HC_id(out fieldID) == false)
+                    {
+                        error("Class Variable: Expected a field identifier after the period.");
+                        return false;
+                    }
+                        
+                    if (classInstance.publicEnvironment.directlyContains(fieldID) == false)
+                    {
+                        error("Class Variable: The field identifier \"" + fieldID + "\" could not be found in class \"" + identifier + "\".");
+                        return false;
+                    }
+                        
+                    temp = classInstance.publicEnvironment.getItem(fieldID);
+
+                    storeToken = currentToken;
+                }
+                currentToken = storeToken;
+
+                if (temp.isList())
+                {
+                    storeToken = currentToken;
+                    if (matchTerminal(HighCTokenLibrary.AT_SIGN))
+                    {
+                        int index;
+                        int length;
+                        if (HC_slice(out index, out length))
+                        {
+                            if (length != 1)
+                            {
+                                error("List Variable: The length of the slice from the list must be 1.");
+                                return false;
+                            }
+
+                            if (index + length - 1 > temp.getCount())
+                            {
+                                error("List Variable: The specified slice goes outside the bounds of the list.");
+                                return false;
+                            }
+
+                            value = ((List<HighCData>)(temp.data))[index - 1];
+                            Console.WriteLine(currentToken + " <variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
+                            return true;
+                        }
+                        else
+                        {
+                            error();
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine(currentToken + " <variable> -> <list id> -> " + identifier+"@ " + value);
+                        currentToken = storeToken;
+                        value = temp;
+                        return true;
+                    }
+                }
+                //<array – variable> <subscript – expr>*
+                else if (temp.isArray())
+                {
+                    storeToken = currentToken;
+                    int intBuffer;
+                    List<int> index = new List<int>();
+                    while (HC_subscript_expression(out intBuffer))
+                    {
+                        storeToken = currentToken;
+                        index.Add(intBuffer - 1);
+                    }
+                    currentToken = storeToken;
+                    if(index.Count>0 || errorFound)
+                    {
+                        if (((HighCArray)(temp.data)).indexInBounds(index))
+                        {
+                            value = ((HighCArray)(temp.data)).getItemAt(index);
+                            Console.WriteLine(currentToken + " <variable> -> <id><subscript>* -> " + identifier + " " + value);
+                            return true;
+                        }
+                        else
+                        {
+                            error("Array Variable: The specified array index goes outside the bounds of the array.");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine(currentToken + " <variable> -> <array id> -> " + identifier + "[] " + value);
+                        currentToken = storeToken;
+                        value = temp;
+                        return true;
+                    }
+                }
+
+                //If Temp is a variable
+                value = temp;
+                Console.WriteLine(currentToken + " <variable> -> <id> -> " + identifier + " " + value);
                 return true;
             }
-
+            
             return false;
         }
 
@@ -8219,11 +7853,22 @@ namespace HighCInterpreterCore
         public List<int> dimensions;
         public Boolean isSeedValue;
 
-        public HighCArray(HighCData[] newArray, List<int> newSizes, Boolean isSeed = false)
+        public HighCArray(
+            HighCData[] newArray, 
+            List<int> newSizes, 
+            Boolean isSeed = false)
         {
             array = newArray;
             dimensions = newSizes;
             isSeedValue = isSeed;
+        }
+
+        public HighCArray(List<HighCData> newArray)
+        {
+            array = newArray.ToArray();
+            dimensions = new List<int>();
+            dimensions.Add(newArray.Count);
+            isSeedValue = false;
         }
 
         public HighCData getItemAt(List<int> index)
@@ -8238,6 +7883,8 @@ namespace HighCInterpreterCore
                 i--;
             }
 
+            Console.WriteLine(offset);
+
             if (offset < array.Length &&
                 offset >= 0)
             {
@@ -8251,15 +7898,19 @@ namespace HighCInterpreterCore
 
         public Boolean indexInBounds(List<int> index)
         {
+            //Assumes 0 as the base index
+
             if (dimensions.Count != index.Count)
             {
                 return false;
             }
 
+
             int i = 0;
             while (i < index.Count)
             {
-                if (index[i] < 1 || index[i] > dimensions[i])
+                Console.WriteLine("AHAHAHAHAHHHH"+index[i]);
+                if (index[i] < 0 || index[i] >= dimensions[i])
                 {
                     return false;
                 }
@@ -8271,7 +7922,25 @@ namespace HighCInterpreterCore
 
     public class HighCClass
     {
+        public HighCClassType classDefinition;
+        public HighCEnvironment publicEnvironment;
+        public HighCEnvironment privateEnvironment;
 
+        public HighCClass(
+            HighCClassType newDefinition,
+            HighCEnvironment newPublicEnvironment,
+            HighCEnvironment newPrivateEnvironment)
+        {
+            classDefinition = newDefinition;
+            publicEnvironment = newPublicEnvironment;
+            privateEnvironment = newPrivateEnvironment;
+        }
+
+        public void setGlobalEnvironment(HighCEnvironment newGlobalEnvironment)
+        {
+            privateEnvironment.parent = publicEnvironment;
+            publicEnvironment.parent = newGlobalEnvironment;
+        }
     }
 
     public class HighCClassType
@@ -8309,6 +7978,134 @@ namespace HighCInterpreterCore
             privateMethods = methodsPrivate;
             publicMethods = methodsPublic;
         }
+
+        public HighCClass instantiateClass(List<HighCData> initiatedFields, out String errorMessage)
+        {
+            HighCEnvironment privateEnvironment = new HighCEnvironment();
+            HighCEnvironment publicEnvironment = new HighCEnvironment();
+            errorMessage = "";
+
+            int i = 0;
+            while(i<initiatedFields.Count)
+            {
+                HighCData firstData = initiatedFields[i];
+                if (firstData.label == "")
+                {
+                    errorMessage = "Unknown identifier, should not see this.";
+                    return null;
+                }
+
+                int j = i + 1;
+                while(j<initiatedFields.Count)
+                {
+                    HighCData secondData = initiatedFields[j];
+                    if (firstData.label == secondData.label)
+                    {
+                        errorMessage = "The field identifier \"" + firstData.label + "\" has been initialized more than once in this declaration.";
+                        return null;
+                    }
+                    j++;
+                }
+                i++;
+            }
+                        
+            foreach(HighCData initiatedField in initiatedFields)
+            {
+                Boolean fieldMatchFound = false;
+                foreach(HighCDataField privateField in privateDataFields)
+                {
+                    if(privateField.id==initiatedField.label)
+                    {
+                        HighCData newItem = privateField.getDataOfFieldType();
+                        if(newItem.isArray() && initiatedField.isList())
+                        {
+                            initiatedField.data = new HighCArray((List<HighCData>)initiatedField.data);
+                            initiatedField.type.memoryType = HighCType.ARRAY_SUBTYPE;
+                        }
+                        
+                        if(newItem.setData(initiatedField) == false)
+                        {
+                            errorMessage = "Uh oh, something went wrong "+newItem.errorCode+" what?";
+                            return null;
+                        }
+                        else
+                        {
+                            privateEnvironment.addNewItem(privateField.id, newItem);
+                            fieldMatchFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(fieldMatchFound==false)
+                {
+                    foreach (HighCDataField publicField in publicDataFields)
+                    {
+                        if (publicField.id == initiatedField.label)
+                        {
+                            HighCData newItem = publicField.getDataOfFieldType();
+
+                            if (newItem.isArray() && initiatedField.isList())
+                            {
+                                initiatedField.data = new HighCArray((List<HighCData>)initiatedField.data);
+                                initiatedField.type.memoryType = HighCType.ARRAY_SUBTYPE;
+                            }
+
+                            if (newItem.setData(initiatedField) == false)
+                            {
+                                Console.WriteLine(initiatedField.label + ": " + initiatedField);
+                                errorMessage = "Uh oh, something went wrong " + newItem.errorCode + " what?";
+                                return null;
+                            }
+                            else
+                            {
+                                publicEnvironment.addNewItem(publicField.id, newItem);
+                                fieldMatchFound = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if(fieldMatchFound == false)
+                {
+                    errorMessage = "The field identifier \"" + initiatedField.label + "\" could not be found in the specified class declaration.";
+                    return null;
+                }
+            }
+            
+            foreach(HighCDataField testField in privateDataFields)
+            {
+                if(privateEnvironment.directlyContains(testField.id)==false)
+                {
+                    errorMessage = "The field \"" + testField.id + "\" was not initialized.";
+                    return null;
+                }
+            }
+
+            foreach (HighCDataField testField in publicDataFields)
+            {
+                if (publicEnvironment.directlyContains(testField.id) == false)
+                {
+                    errorMessage = "The field \"" + testField.id + "\" was not initialized.";
+                    return null;
+                }
+            }
+
+            foreach (HighCMethodDeclaration methodDeclaration in privateMethods)
+            {
+                HighCData newData = new HighCData(HighCType.METHOD_DECLARATION_TYPE, methodDeclaration);
+                privateEnvironment.addNewItem(methodDeclaration.identifier, newData);
+            }
+
+            foreach (HighCMethodDeclaration methodDeclaration in publicMethods)
+            {
+                HighCData newData = new HighCData(HighCType.METHOD_DECLARATION_TYPE, methodDeclaration);
+                publicEnvironment.addNewItem(methodDeclaration.identifier, newData);
+            }
+
+            return new HighCClass(this, publicEnvironment, privateEnvironment);
+        }
     }
     
     public class HighCData
@@ -8320,7 +8117,8 @@ namespace HighCInterpreterCore
             ERROR_EMPTY_STRING = 3, 
             ERROR_CONSTANT_CHANGED=4, 
             ERROR_ARRAY_DIMENSION_MISMATCH=5, 
-            ERROR_INVALID_OPERATOR=6;
+            ERROR_INVALID_OPERATOR=6,
+            ERROR_FIELD_INITIALIZATION_FAILED=7;
 
         public Object data;
         public HighCType type;
@@ -8329,6 +8127,7 @@ namespace HighCInterpreterCore
         public String label;
 
         public int errorCode = -1;
+        public String errorMessage;
 
         public HighCData(HighCType newType)
         {
@@ -8337,7 +8136,11 @@ namespace HighCInterpreterCore
             readable = true;
         }
 
-        public HighCData(String newType, Object newValue, Boolean isWriteEnabled = true, Boolean isReadEnabled = true)
+        public HighCData(
+            String newType, 
+            Object newValue, 
+            Boolean isWriteEnabled = true, 
+            Boolean isReadEnabled = true)
         {
             type = (new HighCType(newType));
             data = newValue;
@@ -8345,7 +8148,11 @@ namespace HighCInterpreterCore
             readable = isReadEnabled;
         }
 
-        public HighCData(HighCType newType, Object newValue, Boolean isWriteEnabled=true, Boolean isReadEnabled=true)
+        public HighCData(
+            HighCType newType, 
+            Object newValue, 
+            Boolean isWriteEnabled=true, 
+            Boolean isReadEnabled=true)
         {
             type = newType;
             data = newValue;
@@ -8498,6 +8305,15 @@ namespace HighCInterpreterCore
         public Boolean isList()
         {
             if (type.memoryType == HighCType.LIST_SUBTYPE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Boolean isFieldInitialization()
+        {
+            if (type.dataType == HighCType.FIELDS_INITIALIZATION_LIST)
             {
                 return true;
             }
@@ -8677,75 +8493,117 @@ namespace HighCInterpreterCore
             return false;
         }
 
-        public Boolean setData(HighCType valueType, Object newValue, Boolean overrideConstant=false)
+        public Boolean setValue(List<HighCData> newValues)
         {
-            if (writable == true || overrideConstant==true)
+            if (type.isClass())
             {
-                if (type.isVariable()==true)
-                {
-                    if(valueType.isVariable()==false)
-                    {
-                        errorCode = ERROR_TYPE_MISMATCH;
-                        return false;
-                    }
+                //Call the class definition to instantiate the class object
 
-                    switch (valueType.dataType)
-                    {
-                        case HighCType.INTEGER_TYPE: return setValue((Int64)newValue);
-                        case HighCType.FLOAT_TYPE: return setValue((Double)newValue);
-                        case HighCType.BOOLEAN_TYPE: return setValue((Boolean)newValue);
-                        case HighCType.STRING_TYPE: return setValue((String)newValue);
-                        case HighCType.CHARACTER_TYPE: return setValue((String)newValue);
-                        case HighCType.ENUMERATION_INSTANCE: return setValue((HighCEnumeration)newValue);
-                        default:
-                            break;
-                    }
+                HighCClass newClassInstantiation = ((HighCClassType)(type.objectReference)).instantiateClass(newValues, out errorMessage);
+
+                if (newClassInstantiation != null)
+                {
+                    data = newClassInstantiation;
+                    return true;
                 }
-                else if(type.isList()==true)
+                else
                 {
-                    if (valueType.isList()==true)
-                    {
-                        List<HighCData> newList = new List<HighCData>();
+                    errorCode = ERROR_FIELD_INITIALIZATION_FAILED;
+                    return false;
+                }
+            }
 
-                        foreach(HighCData item in ((List<HighCData>)newValue))
+            errorCode = ERROR_TYPE_MISMATCH;
+            return false;
+        }
+        
+        public Boolean setData(
+            HighCType valueType,
+            Object newValue,
+            Boolean overrideConstant=false)
+        {
+            if (writable == false && 
+                overrideConstant==false)
+            {
+                errorCode = ERROR_CONSTANT_CHANGED;
+                return false;
+            }
+
+            if (type.isVariable()==true)
+            {
+                if(valueType.isVariable()==false)
+                {
+                    errorCode = ERROR_TYPE_MISMATCH;
+                    return false;
+                }
+
+                switch (valueType.dataType)
+                {
+                    case HighCType.INTEGER_TYPE:
+                        return setValue((Int64)newValue);
+                    case HighCType.FLOAT_TYPE:
+                        return setValue((Double)newValue);
+                    case HighCType.BOOLEAN_TYPE:
+                        return setValue((Boolean)newValue);
+                    case HighCType.STRING_TYPE:
+                        return setValue((String)newValue);
+                    case HighCType.CHARACTER_TYPE:
+                        return setValue((String)newValue);
+                    case HighCType.ENUMERATION_INSTANCE:
+                        return setValue((HighCEnumeration)newValue);
+                    case HighCType.FIELDS_INITIALIZATION_LIST:
+                        return setValue((List<HighCData>)newValue);
+                    default:
+                        break;
+                }
+            }
+            else if(type.isList()==true)
+            {
+                if (valueType.isList()==true)
+                {
+                    List<HighCData> newList = new List<HighCData>();
+
+                    foreach(HighCData item in ((List<HighCData>)newValue))
+                    {
+                        HighCData newItem = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,
+                                                                        type.dataType,
+                                                                        type.objectReference),
+                                                            null);
+                        newItem.type.minimum = type.minimum;
+                        newItem.type.maximum = type.maximum;
+                        if(newItem.setData(item)==false)
                         {
-                            HighCData newItem = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,
-                                                                            type.dataType,
-                                                                            type.objectReference),
-                                                              null);
-                            newItem.type.minimum = type.minimum;
-                            newItem.type.maximum = type.maximum;
-                            if(newItem.setData(item)==false)
-                            {
-                                errorCode = ERROR_TYPE_MISMATCH;
-                                return false;
-                            }
-                            newList.Add(newItem);
+                            errorCode = ERROR_TYPE_MISMATCH;
+                            return false;
                         }
+                        newList.Add(newItem);
+                    }
 
-                        data = newList;
-                        return true;
-                    }
-                    else
-                    {
-                        errorCode = ERROR_TYPE_MISMATCH;
-                    }
+                    data = newList;
+                    return true;
                 }
-                else if(type.isArray()==true)
+                else
                 {
-                    if(valueType.isArray()==true)
+                    errorCode = ERROR_TYPE_MISMATCH;
+                }
+            }
+            else if(type.isArray()==true)
+            {
+                if(valueType.isArray()==true)
+                {
+                    if (((HighCArray)newValue).isSeedValue == false)
                     {
-                        if(((HighCArray)newValue).dimensions.Count !=
-                           ((HighCArray)data).dimensions.Count)
+                        if (((HighCArray)newValue).dimensions.Count !=
+                             ((HighCArray)data).dimensions.Count)
                         {
                             errorCode = ERROR_ARRAY_DIMENSION_MISMATCH;
                             return false;
                         }
 
                         int i = 0;
-                        while(i<((HighCArray)newValue).dimensions.Count)
+                        while (i < ((HighCArray)newValue).dimensions.Count)
                         {
-                            if(((HighCArray)newValue).dimensions[i]!= 
+                            if (((HighCArray)newValue).dimensions[i] !=
                                 ((HighCArray)data).dimensions[i])
                             {
                                 errorCode = ERROR_ARRAY_DIMENSION_MISMATCH;
@@ -8755,42 +8613,56 @@ namespace HighCInterpreterCore
                         }
 
                         i = 0;
-                        while(i < ((HighCArray)newValue).array.Length)
+                        while (i < ((HighCArray)newValue).array.Length)
                         {
-                            if(((HighCArray)data).array[i].setData(((HighCArray)newValue).array[i]) == false)
+                            if (((HighCArray)data).array[i].setData(((HighCArray)newValue).array[i]) == false)
                             {
                                 errorCode = ((HighCArray)data).array[i].errorCode;
                                 return false;
                             }
                             i++;
                         }
-
-                        return true;
                     }
                     else
                     {
-                        errorCode = ERROR_TYPE_MISMATCH;
+                        int i = 0;
+                        while (i < ((HighCArray)data).array.Length)
+                        {
+                            if (((HighCArray)data).array[i].setData(((HighCArray)newValue).array[0]) == false)
+                            {
+                                errorCode = ((HighCArray)data).array[i].errorCode;
+                                return false;
+                            }
+                            i++;
+                        }
                     }
+
+                    return true;
                 }
                 else
                 {
-                    Console.WriteLine("Should not see this: "+type);
+                    errorCode = ERROR_TYPE_MISMATCH;
                 }
             }
             else
             {
-                errorCode = ERROR_CONSTANT_CHANGED;
+                Console.WriteLine("Should not see this: "+type);
             }
 
             return false;
         }
 
-        public Boolean setData(HighCData newValue, Boolean overrideConstant = false)
+        public Boolean setData(
+            HighCData newValue, 
+            Boolean overrideConstant = false)
         {
             return setData(newValue.type, newValue.data, overrideConstant);
         }
 
-        public Boolean compare(HighCData value2, String opType, out Boolean value)
+        public Boolean compare(
+            HighCData value2, 
+            String opType, 
+            out Boolean value)
         {
             Double term1 = 0.0;
             Double term2 = 0.0;
@@ -9072,7 +8944,10 @@ namespace HighCInterpreterCore
         public String id;
         public List<int> arrayIndice;
 
-        public HighCDataField(String newId, HighCType newType, List<int> memoryType)
+        public HighCDataField(
+            String newId, 
+            HighCType newType, 
+            List<int> memoryType)
         {
             id = newId;
             type = newType;
@@ -9091,6 +8966,39 @@ namespace HighCInterpreterCore
                 arrayIndice = memoryType;
             }
         }
+
+        public HighCData getDataOfFieldType()
+        {
+            HighCData returnData = new HighCData(type);
+            if(type.isList())
+            {
+                returnData.data = new List<HighCData>();
+            }
+            if(type.isArray())
+            {
+                int size = 1;
+                foreach (int dimSize in arrayIndice)
+                {
+                    size = size * dimSize;
+                }
+                
+                HighCData[] array = new HighCData[size];
+                int i = 0;
+                while (i < array.Length)
+                {
+                    HighCData value = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE, type.dataType, type.objectReference));
+                    value.type.minimum = type.minimum;
+                    value.type.maximum = type.maximum;
+                    array[i] = value;
+                    i++;
+                }
+
+                HighCArray newArray = new HighCArray(array, arrayIndice);
+
+                returnData.data = newArray;
+            }
+            return returnData;
+        }
     }
 
     public class HighCEnumeration
@@ -9099,7 +9007,10 @@ namespace HighCInterpreterCore
         public HighCEnumerationType type;
         public int rank;
 
-        public HighCEnumeration(String name, HighCEnumerationType enumerationType, int newRank)
+        public HighCEnumeration(
+            String name, 
+            HighCEnumerationType enumerationType, 
+            int newRank)
         {
             identifier = name;
             type = enumerationType;
@@ -9116,7 +9027,9 @@ namespace HighCInterpreterCore
         public String identifier;
         public HighCEnumeration[] enumList;
 
-        public HighCEnumerationType(String name, List<String> newEnumList)
+        public HighCEnumerationType(
+            String name, 
+            List<String> newEnumList)
         {
             identifier = name;
             enumList = new HighCEnumeration[newEnumList.Count];
@@ -9200,9 +9113,9 @@ namespace HighCInterpreterCore
         }
     }
 
-    class HighCEnvironment
+    public class HighCEnvironment
     {
-        HighCEnvironment parent;
+        public HighCEnvironment parent;
 
         public List<String> identifiers = new List<String>();
         public List<HighCData> data = new List<HighCData>();
@@ -9246,7 +9159,10 @@ namespace HighCInterpreterCore
             data.Add(newItem);
         }
 
-        public Boolean changeItem(String identifier, HighCData newValue, out HighCData currentItem)
+        public Boolean changeItem(
+            String identifier, 
+            HighCData newValue, 
+            out HighCData currentItem)
         {
             currentItem = getItem(identifier);
 
@@ -9286,7 +9202,13 @@ namespace HighCInterpreterCore
         public HighCType returnType;
         public int blockTokenPosition;
 
-        public HighCFunctionDeclaration(String name, Boolean purity, Boolean recursiveness, List<HighCParameter> newParameters, HighCType returnValue, int startPosition)
+        public HighCFunctionDeclaration(
+            String name, 
+            Boolean purity, 
+            Boolean recursiveness, 
+            List<HighCParameter> newParameters, 
+            HighCType returnValue, 
+            int startPosition)
         {
             identifier = name;
             isPure = purity;
@@ -9298,7 +9220,13 @@ namespace HighCInterpreterCore
 
         public HighCFunctionDeclaration Clone()
         {
-            return new HighCFunctionDeclaration(identifier, isPure, isRecursive, parameters, returnType, blockTokenPosition);
+            return new HighCFunctionDeclaration(
+                identifier, 
+                isPure, 
+                isRecursive, 
+                parameters, 
+                returnType, 
+                blockTokenPosition);
         }
     }
 
@@ -9312,7 +9240,14 @@ namespace HighCInterpreterCore
         public HighCType returnType;
         public int blockTokenPosition;
 
-        public HighCMethodDeclaration(String name, String newOption, Boolean purity, Boolean recursiveness, List<HighCParameter> newParameters, HighCType returnValue, int startPosition)
+        public HighCMethodDeclaration(
+            String name, 
+            String newOption, 
+            Boolean purity, 
+            Boolean recursiveness, 
+            List<HighCParameter> newParameters, 
+            HighCType returnValue, 
+            int startPosition)
         {
             identifier = name;
             option = newOption;
@@ -9332,7 +9267,12 @@ namespace HighCInterpreterCore
         public HighCType type;
         List<String> subscriptParameters;
 
-        public HighCParameter(String name, HighCType newType, Boolean inStatus, Boolean outStatus, List<String> newSubscriptParameters)
+        public HighCParameter(
+            String name, 
+            HighCType newType, 
+            Boolean inStatus, 
+            Boolean outStatus, 
+            List<String> newSubscriptParameters)
         {
             identifier = name;
             type = newType;
@@ -9351,11 +9291,13 @@ namespace HighCInterpreterCore
         public const String CHARACTER_TYPE = HighCTokenLibrary.CHARACTER;
         public const String STRING_TYPE = HighCTokenLibrary.STRING;
         public const String FUNCTION_DECLARATION_TYPE = HighCTokenLibrary.FUNCTION;
+        public const String METHOD_DECLARATION_TYPE = HighCTokenLibrary.METHOD;
         public const String ENUMERATION_TYPE = HighCTokenLibrary.ENUMERATION;
         public const String ENUMERATION_INSTANCE = HighCTokenLibrary.ENUMERATION + " " + HighCTokenLibrary.VARIABLE;
         public const String CLASS_TYPE = HighCTokenLibrary.CLASS;
         public const String CLASS_INSTANCE = HighCTokenLibrary.CLASS + " " + HighCTokenLibrary.VARIABLE;
         public const String VOID_TYPE = HighCTokenLibrary.VOID;
+        public const String FIELDS_INITIALIZATION_LIST = HighCTokenLibrary.CLASS + " Field Values";
 
         //MEMORY TYPE
         public const String VARIABLE_SUBTYPE = HighCTokenLibrary.VARIABLE;
@@ -9377,7 +9319,12 @@ namespace HighCInterpreterCore
             setRange();
         }
 
-        public HighCType(String newMemoryType, String newDataType, Object newObjectReference=null, HighCData newMin = null, HighCData newMax = null)
+        public HighCType(
+            String newMemoryType, 
+            String newDataType, 
+            Object newObjectReference=null, 
+            HighCData newMin = null, 
+            HighCData newMax = null)
         {
             dataType = newDataType;
             memoryType = newMemoryType;
@@ -9385,7 +9332,9 @@ namespace HighCInterpreterCore
             setRange(newMin, newMax);
         }
         
-        private void setRange(HighCData newMin = null, HighCData newMax = null)
+        private void setRange(
+            HighCData newMin = null, 
+            HighCData newMax = null)
         {
             if (newMin == null)
             {

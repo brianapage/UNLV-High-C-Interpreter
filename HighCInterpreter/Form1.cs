@@ -40,24 +40,42 @@ namespace HighCInterpreterCore
                 "{" + Environment.NewLine +
                 "" + Environment.NewLine +
                 "}";
-            
+
             textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
-                "//User Constants" + Environment.NewLine +
+                "//User Constants" + Environment.NewLine + 
+                "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
                 "//Global Variables" + Environment.NewLine +
                 "//Classes" + Environment.NewLine +
                 "final class testClass" + Environment.NewLine +
                 "private" + Environment.NewLine +
                 "{" + Environment.NewLine +
                 "   //Data Fields" + Environment.NewLine +
-                "   create INT:1...10 width, height" + Environment.NewLine +
+                "   " + Environment.NewLine +
                 "   //Methods" + Environment.NewLine +
                 "   last pure recurs method calculateAreas(INT val1, INT val2) => INT { return 3 }" + Environment.NewLine +
                 "}" + Environment.NewLine +
                 "public" + Environment.NewLine +
                 "{" + Environment.NewLine +
                 "   //Data Fields" + Environment.NewLine +
-                "   create INT areas[3]" + Environment.NewLine +
+                "   create BOOL boolTest" + Environment.NewLine +
+                "   create BOOL boolTest2@" + Environment.NewLine +
+                "   create BOOL boolTest3[2][3]" + Environment.NewLine +
+                "   create weekdays enumTest" + Environment.NewLine +
+                "   create weekdays enumTest2@" + Environment.NewLine +
+                "   create weekdays enumTest3[3]" + Environment.NewLine +
+                "   create INT intTest" + Environment.NewLine +
+                "   create INT intTest2@" + Environment.NewLine +
+                "   create INT intTest3[2][3]" + Environment.NewLine +
+                "   create CHAR charTest" + Environment.NewLine +
+                "   create CHAR charTest2@" + Environment.NewLine +
+                "   create CHAR charTest3[2][3]" + Environment.NewLine +
+                "   create STRING stringTest" + Environment.NewLine +
+                "   create STRING stringTest2@" + Environment.NewLine +
+                "   create STRING stringTest3[2][3]" + Environment.NewLine +
+                "   create FLOAT floatTest" + Environment.NewLine +
+                "   create FLOAT floatTest2@" + Environment.NewLine +
+                "   create FLOAT floatTest3[2][3]" + Environment.NewLine +
                 "   //Methods" + Environment.NewLine +
                 "   method getArea() => INT { return areas[3] }" + Environment.NewLine +
                 "}" + Environment.NewLine +
@@ -66,7 +84,14 @@ namespace HighCInterpreterCore
                 Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                "   " + Environment.NewLine +
+                "   create testClass test ={" + Environment.NewLine +
+                "    boolTest=false, boolTest2={false,true,false}, boolTest3=Array(true)," + Environment.NewLine +
+                "    intTest=-1, intTest2={0,5,10}, intTest3={{1,2,3},{4,5,6}}," + Environment.NewLine +
+                "    charTest=\"a\", charTest2={\"b\",\"c\",\"d\"}, charTest3=Array(\"e\")," + Environment.NewLine +
+                "    stringTest=\"alpha\", stringTest2={\"bravo\",\"charlie\",\"delta\"}, stringTest3=Array(\"echo\")," + Environment.NewLine +
+                "    enumTest=Sunday, enumTest2={Monday, Tuesday, Wednesday}, enumTest3={Thursday, Friday, Saturday}," + Environment.NewLine +
+                "    floatTest=-1.5, floatTest2={0.1,3.14,10.7e3}, floatTest3={{1.1,2.2,3.3},{4.4,5.5,6.6}}" + Environment.NewLine +
+                "                          }" + Environment.NewLine +
                 "}";
             //*/
 
