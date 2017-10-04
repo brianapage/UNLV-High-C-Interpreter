@@ -47,6 +47,10 @@ namespace HighCInterpreterCore
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
                 "//Global Variables" + Environment.NewLine +
                 "//Classes" + Environment.NewLine +
+                "class helloWorldClass" + Environment.NewLine +
+                "private{}" + Environment.NewLine +
+                "public{ create STRING text }" + Environment.NewLine +
+                "   " + Environment.NewLine +
                 "final class testClass" + Environment.NewLine +
                 "private" + Environment.NewLine +
                 "{" + Environment.NewLine +
@@ -76,6 +80,7 @@ namespace HighCInterpreterCore
                 "   create FLOAT floatTest" + Environment.NewLine +
                 "   create FLOAT floatTest2@" + Environment.NewLine +
                 "   create FLOAT floatTest3[2][3]" + Environment.NewLine +
+                "   create helloWorldClass classTest" + Environment.NewLine +
                 "   //Methods" + Environment.NewLine +
                 "   method getArea() => INT { return areas[3] }" + Environment.NewLine +
                 "}" + Environment.NewLine +
@@ -90,8 +95,21 @@ namespace HighCInterpreterCore
                 "    charTest=\"a\", charTest2={\"b\",\"c\",\"d\"}, charTest3=Array(\"e\")," + Environment.NewLine +
                 "    stringTest=\"alpha\", stringTest2={\"bravo\",\"charlie\",\"delta\"}, stringTest3=Array(\"echo\")," + Environment.NewLine +
                 "    enumTest=Sunday, enumTest2={Monday, Tuesday, Wednesday}, enumTest3={Thursday, Friday, Saturday}," + Environment.NewLine +
+                "    classTest = { text = \"Hello World!\"}," + Environment.NewLine +
                 "    floatTest=-1.5, floatTest2={0.1,3.14,10.7e3}, floatTest3={{1.1,2.2,3.3},{4.4,5.5,6.6}}" + Environment.NewLine +
                 "                          }" + Environment.NewLine +
+                "   out \"Bool: \", \"Bool: \", test.boolTest, endl" + Environment.NewLine +
+                "   out \"Int: \", test.intTest, endl" + Environment.NewLine +
+                "   out \"Char: \", test.charTest, endl" + Environment.NewLine +
+                "   out \"String: \", test.stringTest, endl" + Environment.NewLine +
+                "   out \"Enum: \", test.enumTest, endl" + Environment.NewLine +
+                "   out \"Float: \", test.floatTest, endl" + Environment.NewLine +
+                "   out \"Class: \", test.classTest.text, endl" + Environment.NewLine +
+                "   out \"List: \", test.enumTest2@2, endl" + Environment.NewLine +
+                "   out \"Array: \", test.floatTest3[2][1], endl" + Environment.NewLine +
+                "   out \"Expression: \", (test.intTest2@2)+test.floatTest3[1][3], endl" + Environment.NewLine +
+                "   " + Environment.NewLine +
+                "   " + Environment.NewLine +
                 "}";
             //*/
 
