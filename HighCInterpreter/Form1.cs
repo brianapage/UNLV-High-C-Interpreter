@@ -41,7 +41,27 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
+            //Default
             textbox_InputBox.Text =
+                "//Compiler Directives" + Environment.NewLine +
+                "//User Constants" + Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
+                "//Classes" + Environment.NewLine +
+                "class testClass" + Environment.NewLine +
+                "private {}" + Environment.NewLine +
+                "public {create INT num}" + Environment.NewLine +
+                "//Functions" + Environment.NewLine +
+                "//Main" + Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "  create testClass testList@ = { {num=1},{num=2},{num=3} }" + Environment.NewLine +
+                "  out testList@(1).num" + Environment.NewLine +
+                "}";
+            //*/
+
+            
+            /*textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
                 "//User Constants" + Environment.NewLine + 
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +

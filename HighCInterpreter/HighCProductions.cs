@@ -16,7 +16,6 @@ namespace HighCInterpreterCore
         private List<String> debugList = new List<String>();
         private Boolean stopProgram = false;
         private Boolean errorFound = false;
-        //private HighCEnvironment primitiveEnvironment;
         private HighCEnvironment globalEnvironment;
         private HighCEnvironment currentEnvironment;
         //Function State Variables
@@ -88,7 +87,7 @@ namespace HighCInterpreterCore
 
             if (matchStatus == true)
             {
-                Console.WriteLine("Matched Token: " + tokenList[currentToken].Text + " to " + token);
+                Console.WriteLine("     Matched Token: " + tokenList[currentToken].Text + " to " + token);
             }
             else if (outputToken == true)
             {
@@ -4337,12 +4336,12 @@ namespace HighCInterpreterCore
                 if (variableSubtype[0] == -1)
                 {
                     if (constantValue.isList() == false ||
-                        constantValue.isFieldInitialization())
+                        (expectedType.isClass() == false && constantValue.isFieldInitialization()))
                     {
                         error("Declaration \"" + variableName + "\": This variable cannot be initialized with a value of type <" + constantValue.type + ">, was expecting a <" + expectedType + "@>.");
                         return false;
                     }
-
+                    
                     variable.type.memoryType = HighCType.LIST_SUBTYPE;
                     variable.type.dataType = expectedType.dataType;
                     Boolean floatFound = false;
@@ -7672,58 +7671,78 @@ namespace HighCInterpreterCore
             value = null;
             /*
             <id>
-            <string – variable> $ <slice>
+            <string – variable> $ <slice>  <- Handled by <string term>
             <array – variable> <subscript – expr>* [ <slice> ]
-            <list – variable> @ <slice> <- Performed where variable is called
+            <list – variable> @ <slice>
             <object – variable>.<variable>
              */
-
+            
             String identifier;
-            if (HC_id(out identifier))
+            if (HC_id(out identifier) == false)
             {
-                HighCData temp = currentEnvironment.getItem(identifier);
+                return false;
+            }
+            storeToken = currentToken;
 
-                if (temp == null)
-                {
-                    error("Variable: The specified variable \"" + identifier + "\" could not be found.");
-                    return false;
-                }
-                else if (temp.readable == false)
-                {
-                    error("Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
-                    return false;
-                }
+            HighCData temp = currentEnvironment.getItem(identifier);
 
-                
-                storeToken = currentToken;
-                while (
-                    temp.isClass() && 
-                    matchTerminal(HighCTokenLibrary.PERIOD) == true)
-                {
-                    String fieldID;
-                    HighCClass classInstance = (HighCClass)temp.data;
-                    if (HC_id(out fieldID) == false)
-                    {
-                        error("Class Variable: Expected a field identifier after the period.");
-                        return false;
-                    }
-                        
-                    if (classInstance.publicEnvironment.directlyContains(fieldID) == false)
-                    {
-                        error("Class Variable: The field identifier \"" + fieldID + "\" could not be found in class \"" + identifier + "\".");
-                        return false;
-                    }
-                        
-                    temp = classInstance.publicEnvironment.getItem(fieldID);
-
-                    storeToken = currentToken;
-                }
-                currentToken = storeToken;
-
-                if (temp.isList())
+            if (temp == null)
+            {
+                error("Variable: The specified variable \"" + identifier + "\" could not be found.");
+                return false;
+            }
+            else if (temp.readable == false)
+            {
+                error("Variable: The specified variable \"" + identifier + "\" cannot be referenced.");
+                return false;
+            }
+            
+            //Handles the dot operator
+            while(temp.isClass())
+            {
+                if (temp.isVariable())
                 {
                     storeToken = currentToken;
-                    if (matchTerminal(HighCTokenLibrary.AT_SIGN))
+                    if (matchTerminal(HighCTokenLibrary.PERIOD)) //Indirection
+                    {
+                        HighCClass classInstance = (HighCClass)temp.data;
+                        String fieldID;
+                        if (HC_id(out fieldID) == false)
+                        {
+                            error("Class Variable: Expected a field identifier after the period.");
+                            return false;
+                        }
+
+                        if (classInstance.publicEnvironment.directlyContains(fieldID) == false)
+                        {
+                            error("Class Variable: The field identifier \"" + fieldID + "\" could not be found in class \"" + identifier + "\".");
+                            return false;
+                        }
+
+                        storeToken = currentToken;
+                        temp = classInstance.publicEnvironment.getItem(fieldID);
+                        Console.WriteLine(currentToken + " <variable> -> <object - variable>.<variable> -> " + identifier + "." + fieldID);
+                    }
+                    else //Return Class
+                    {
+                        currentToken = storeToken;
+                        value = temp;
+                        Console.WriteLine(currentToken + " <variable> -> <object - variable> -> " + identifier + value);
+                        return true;
+                    }
+                }
+                else if (temp.isList())
+                {
+                    storeToken = currentToken;
+                    if (matchTerminal(HighCTokenLibrary.PERIOD))
+                    {
+                        error("Class Variable: Cannot access fields from lists of classes without specifying an index.");
+                        return false;
+                    }
+                    
+                    addDebugInfo("Here: " + temp.type.memoryType + ": " + temp.type.dataType);
+                    currentToken = storeToken;
+                    if (matchTerminal(HighCTokenLibrary.AT_SIGN)) //Return Slice
                     {
                         int index;
                         int length;
@@ -7741,9 +7760,34 @@ namespace HighCInterpreterCore
                                 return false;
                             }
 
-                            value = ((List<HighCData>)(temp.data))[index - 1];
-                            Console.WriteLine(currentToken + " <variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
-                            return true;
+                            storeToken = currentToken;
+                            if(matchTerminal(HighCTokenLibrary.PERIOD))//Indirection
+                            {
+                                HighCClass classInstance = (HighCClass)(((List<HighCData>)temp.data)[index - 1].data);
+                                String fieldID;
+                                if (HC_id(out fieldID) == false)
+                                {
+                                    error("Class Variable: Expected a field identifier after the period.");
+                                    return false;
+                                }
+
+                                if (classInstance.publicEnvironment.directlyContains(fieldID) == false)
+                                {
+                                    error("Class Variable: The field identifier \"" + fieldID + "\" could not be found in class \"" + identifier + "\".");
+                                    return false;
+                                }
+
+                                storeToken = currentToken;
+                                temp = classInstance.publicEnvironment.getItem(fieldID);
+                                Console.WriteLine(currentToken + " <variable> -> <object - variable>@<slice>.<variable> -> " + identifier + "@"+index+"." + fieldID);
+                            }
+                            else //Return Class @ Slice
+                            {
+                                currentToken = storeToken;
+                                value = ((List<HighCData>)(temp.data))[index - 1];
+                                Console.WriteLine(currentToken + " <variable> -> <object - variable>@<slice> -> " + identifier + value);
+                                return true;
+                            }
                         }
                         else
                         {
@@ -7751,56 +7795,135 @@ namespace HighCInterpreterCore
                             return false;
                         }
                     }
-                    else
+                    else //Return Class List
                     {
-                        Console.WriteLine(currentToken + " <variable> -> <list id> -> " + identifier+"@ " + value);
                         currentToken = storeToken;
                         value = temp;
+                        Console.WriteLine(currentToken + " <variable> -> <object - variable> -> " + identifier + value);
                         return true;
                     }
                 }
-                //<array – variable> <subscript – expr>*
                 else if (temp.isArray())
                 {
-                    storeToken = currentToken;
-                    int intBuffer;
-                    List<int> index = new List<int>();
-                    while (HC_subscript_expression(out intBuffer))
+
+                }
+            }
+
+            /*
+            storeToken = currentToken;
+            while (temp.isClass() &&
+                matchTerminal(HighCTokenLibrary.PERIOD) == true)
+            {
+                String fieldID;
+                if(temp.isList()==true)
+                {
+                    error("Class Variable: Cannot access fields from lists of classes without specifying an index.");
+                    return false;
+                }
+                if (temp.isArray() == true)
+                {
+                    error("Class Variable: Cannot access fields from an array of classes without specifying an index.");
+                    return false;
+                }
+
+                HighCClass classInstance = (HighCClass)temp.data;
+                if (HC_id(out fieldID) == false)
+                {
+                    error("Class Variable: Expected a field identifier after the period.");
+                    return false;
+                }
+                        
+                if (classInstance.publicEnvironment.directlyContains(fieldID) == false)
+                {
+                    error("Class Variable: The field identifier \"" + fieldID + "\" could not be found in class \"" + identifier + "\".");
+                    return false;
+                }
+                        
+                temp = classInstance.publicEnvironment.getItem(fieldID);
+
+                storeToken = currentToken;
+            }
+            */
+
+            currentToken = storeToken;
+            if (temp.isList())
+            {
+                storeToken = currentToken;
+                if (matchTerminal(HighCTokenLibrary.AT_SIGN))
+                {
+                    int index;
+                    int length;
+                    if (HC_slice(out index, out length))
                     {
-                        storeToken = currentToken;
-                        index.Add(intBuffer - 1);
-                    }
-                    currentToken = storeToken;
-                    if(index.Count>0 || errorFound)
-                    {
-                        if (((HighCArray)(temp.data)).indexInBounds(index))
+                        if (length != 1)
                         {
-                            value = ((HighCArray)(temp.data)).getItemAt(index);
-                            Console.WriteLine(currentToken + " <variable> -> <id><subscript>* -> " + identifier + " " + value);
-                            return true;
-                        }
-                        else
-                        {
-                            error("Array Variable: The specified array index goes outside the bounds of the array.");
+                            error("List Variable: The length of the slice from the list must be 1.");
                             return false;
                         }
+
+                        if (index + length - 1 > temp.getCount())
+                        {
+                            error("List Variable: The specified slice goes outside the bounds of the list.");
+                            return false;
+                        }
+
+                        value = ((List<HighCData>)(temp.data))[index - 1];
+                        Console.WriteLine(currentToken + " <variable> -> <id>@<slice> -> " + identifier + "@" + index + " " + value);
+                        return true;
                     }
                     else
                     {
-                        Console.WriteLine(currentToken + " <variable> -> <array id> -> " + identifier + "[] " + value);
-                        currentToken = storeToken;
-                        value = temp;
-                        return true;
+                        error();
+                        return false;
                     }
                 }
-
-                //If Temp is a variable
-                value = temp;
-                Console.WriteLine(currentToken + " <variable> -> <id> -> " + identifier + " " + value);
-                return true;
+                else
+                {
+                    Console.WriteLine(currentToken + " <variable> -> <list id> -> " + identifier+"@ " + value);
+                    currentToken = storeToken;
+                    value = temp;
+                    return true;
+                }
             }
-            
-            return false;
+            //<array – variable> <subscript – expr>*
+            else if (temp.isArray())
+            {
+                storeToken = currentToken;
+                int intBuffer;
+                List<int> index = new List<int>();
+                while (HC_subscript_expression(out intBuffer))
+                {
+                    storeToken = currentToken;
+                    index.Add(intBuffer - 1);
+                }
+                currentToken = storeToken;
+                if(index.Count>0 || errorFound)
+                {
+                    if (((HighCArray)(temp.data)).indexInBounds(index))
+                    {
+                        value = ((HighCArray)(temp.data)).getItemAt(index);
+                        Console.WriteLine(currentToken + " <variable> -> <id><subscript>* -> " + identifier + " " + value);
+                        return true;
+                    }
+                    else
+                    {
+                        error("Array Variable: The specified array index goes outside the bounds of the array.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(currentToken + " <variable> -> <array id> -> " + identifier + "[] " + value);
+                    currentToken = storeToken;
+                    value = temp;
+                    return true;
+                }
+            }
+
+            //If Temp is a variable
+            value = temp;
+            Console.WriteLine(currentToken + " <variable> -> <id> -> " + identifier + " " + value);
+            return true;
         }
 
         private Boolean HC_void_call()
@@ -8212,6 +8335,15 @@ namespace HighCInterpreterCore
             return false;
         }
 
+        public Boolean isFieldInitialization()
+        {
+            if (type.dataType == HighCType.FIELDS_INITIALIZATION_LIST)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public Boolean isFloat()
         {
             if (type.dataType == HighCType.FLOAT_TYPE)
@@ -8310,16 +8442,7 @@ namespace HighCInterpreterCore
             }
             return false;
         }
-
-        public Boolean isFieldInitialization()
-        {
-            if (type.dataType == HighCType.FIELDS_INITIALIZATION_LIST)
-            {
-                return true;
-            }
-            return false;
-        }
-
+        
         public Boolean setValue(Int64 newValue)
         {
             if (type.dataType == HighCType.INTEGER_TYPE)
@@ -8559,28 +8682,63 @@ namespace HighCInterpreterCore
             }
             else if(type.isList()==true)
             {
+                Console.WriteLine("Whaaa?");
+                Console.WriteLine(type);
+                Console.WriteLine(valueType);
                 if (valueType.isList()==true)
                 {
-                    List<HighCData> newList = new List<HighCData>();
-
-                    foreach(HighCData item in ((List<HighCData>)newValue))
+                    /*
+                    if (valueType.isFieldInitialization())
                     {
-                        HighCData newItem = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,
-                                                                        type.dataType,
-                                                                        type.objectReference),
-                                                            null);
-                        newItem.type.minimum = type.minimum;
-                        newItem.type.maximum = type.maximum;
-                        if(newItem.setData(item)==false)
+                        if(type.isClass()==false)
                         {
                             errorCode = ERROR_TYPE_MISMATCH;
                             return false;
                         }
-                        newList.Add(newItem);
-                    }
 
-                    data = newList;
-                    return true;
+                        List<HighCData> leftSide = (List<HighCData>)data;
+                        List<HighCData> rightSide = (List<HighCData>)newValue;
+
+                        if (leftSide.Count !=
+                            rightSide.Count)
+                        {
+                            errorCode = ERROR_ARRAY_DIMENSION_MISMATCH;
+                            return false;
+                        }
+
+                        int i = 0;
+                        while(i<leftSide.Count)
+                        {
+                            leftSide[i].setData(rightSide[i]);
+                            i++;
+                        }
+
+                        return true;
+                    }
+                    else
+                    {*/
+                        //List to List Replacement
+                        List<HighCData> newList = new List<HighCData>();
+
+                        foreach (HighCData item in ((List<HighCData>)newValue))
+                        {
+                            HighCData newItem = new HighCData(new HighCType(HighCType.VARIABLE_SUBTYPE,
+                                                                            type.dataType,
+                                                                            type.objectReference),
+                                                                null);
+                            newItem.type.minimum = type.minimum;
+                            newItem.type.maximum = type.maximum;
+                            if (newItem.setData(item) == false)
+                            {
+                                errorCode = ERROR_TYPE_MISMATCH;
+                                return false;
+                            }
+                            newList.Add(newItem);
+                        }
+
+                        data = newList;
+                        return true;
+                    //}
                 }
                 else
                 {
@@ -9473,6 +9631,15 @@ namespace HighCInterpreterCore
         public Boolean isInteger()
         {
             if (dataType == HighCType.INTEGER_TYPE)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Boolean isFieldInitialization()
+        {
+            if (dataType == HighCType.FIELDS_INITIALIZATION_LIST)
             {
                 return true;
             }
