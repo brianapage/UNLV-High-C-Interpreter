@@ -6837,7 +6837,7 @@ namespace HighCInterpreterCore
 
         private Boolean HC_return_type(out HighCType type)
         {
-            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_scalar_expression"); }
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_return_type"); }
             int storeToken = currentToken;
 
             /*
@@ -6865,7 +6865,7 @@ namespace HighCInterpreterCore
 
         private Boolean HC_scalar_constant(out HighCData value)
         {
-            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_scalar_expression"); }
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_scalar_constant"); }
             int storeToken = currentToken;
             value = null;
 
