@@ -55,8 +55,11 @@ namespace HighCInterpreterCore
                 Environment.NewLine +
                 "main" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                "  create testClass testList@ = { {num=1},{num=2},{num=3} }" + Environment.NewLine +
-                "  out testList@(1).num" + Environment.NewLine +
+                "  create testClass testList[2][3] =" + Environment.NewLine +
+                "  {" + Environment.NewLine +
+                "    {{num=1},{num=2},{num=3}}," + Environment.NewLine +
+                "    {{num=4},{num=5},{num=6}}" + Environment.NewLine +
+                "  }" + Environment.NewLine +
                 "}";
             //*/
 

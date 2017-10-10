@@ -782,8 +782,25 @@ namespace HighCInterpreterCore
                 //Determine dimensionality from number of left side left brackets
                 while (matchTerminal(HighCTokenLibrary.LEFT_CURLY_BRACKET))
                 {
-                    storeToken = currentToken;
-                    currentDimension++;
+                    int storeToken2 = currentToken;
+                    HighCData objectBuffer;
+                    //Unread left curly bracket
+                    currentToken = storeToken;
+                    if (HC_object_constant(out objectBuffer))
+                    {
+                        if(((List<HighCData>)objectBuffer.data).Count!=0)
+                        {
+                            //Unread left curly bracket and initiated field list
+                            //Stop looking for new levels
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        currentToken = storeToken2;
+                        storeToken = currentToken;
+                        currentDimension++;
+                    }
                 }
                 currentToken = storeToken;
 
@@ -796,7 +813,7 @@ namespace HighCInterpreterCore
                     dimensionCounters[i] = 0;
                     i++;
                 }
-
+                
                 List<HighCData> arrayBuffer = new List<HighCData>();
                 currentDimension--;
                 HighCData itemBuffer;
@@ -817,6 +834,7 @@ namespace HighCInterpreterCore
                     currentToken = storeToken;
                     if (expectElement && HC_element_expression(out itemBuffer))
                     {
+                        addDebugInfo("Found Element: " + itemBuffer);
                         arrayBuffer.Add(itemBuffer);
                         dimensionCounters[currentDimension]++;
                         storeToken = currentToken;
@@ -3099,20 +3117,20 @@ namespace HighCInterpreterCore
             <scalar – expr>
             <object – expr>
              */
-
-            if (HC_scalar_expression(out value))
-            {
-                Console.WriteLine(currentToken + " <element - expr> -> <scalar - expr> ->" + value);
-                return true;
-            }
-
-            currentToken = storeToken;
+             
             if (HC_object_expression(out value))
             {
                 Console.WriteLine(currentToken + " <element - expr> -> <object - expr> ->" + value);
                 return true;
             }
 
+            currentToken = storeToken;
+            if (HC_scalar_expression(out value))
+            {
+                Console.WriteLine(currentToken + " <element - expr> -> <scalar - expr> ->" + value);
+                return true;
+            }
+            
             return false;
         }
 
@@ -3786,7 +3804,9 @@ namespace HighCInterpreterCore
             HighCEnvironment storeEnvironment;
             List<HighCParameter> parameters;
             List<HighCData> parameterData = new List<HighCData>();
+            List<HighCData> subscriptData = new List<HighCData>();
             List<String> outIdentifiers = new List<String>();
+            List<String> subscriptIdentifiers = new List<String>();
             Boolean firstParameter = true;
 
             if (HC_function_expression(out function))
@@ -3830,11 +3850,54 @@ namespace HighCInterpreterCore
                             if (HC_expression(out value))
                             {
                                 HighCData newValue = new HighCData(parameter.type, null, true, true);
+
+                                if(parameter.type.isArray())
+                                {
+                                    if(value.isArray())
+                                    {
+                                        HighCArray newArray = (HighCArray)(value.data);
+
+                                        int size = 1;
+                                        foreach (int dimensionLength in newArray.dimensions)
+                                        {
+                                            size = size * dimensionLength;
+                                        }
+                                        
+                                        HighCData[] array = new HighCData[size];
+                                        int i = 0;
+                                        while (i < array.Length)
+                                        {
+                                            HighCType itemType = new HighCType(HighCType.VARIABLE_SUBTYPE,
+                                                                                parameter.type.dataType,
+                                                                                parameter.type.objectReference);
+                                            itemType.minimum = parameter.type.minimum;
+                                            itemType.maximum = parameter.type.maximum;
+
+                                            array[i] = new HighCData(itemType, null);
+                                            i++;
+                                        }
+                                        newValue.data = newArray;
+                                    }
+                                }
+
                                 if (newValue.setData(value.type, value.data) == true)
                                 {
                                     newValue.writable = parameter.outAllowed;
                                     newValue.readable = parameter.inAllowed;
                                     parameterData.Add(newValue);
+
+                                    if(parameter.type.isArray())
+                                    {
+                                        int i = 0;
+                                        while(i<parameter.subscriptParameters.Count)
+                                        {
+                                            HighCData newSubscript = new HighCData(new HighCType(HighCType.INTEGER_TYPE), ((HighCArray)(newValue.data)).dimensions[i]);
+
+                                            subscriptIdentifiers.Add(parameter.subscriptParameters[i]);
+                                            subscriptData.Add(newSubscript);
+                                            i++;
+                                        }
+                                    }
                                 }
                                 else
                                 {
@@ -3917,6 +3980,13 @@ namespace HighCInterpreterCore
                         foreach (HighCParameter parameter in parameters)
                         {
                             currentEnvironment.addNewItem(parameter.identifier, parameterData[i]);
+                            i++;
+                        }
+
+                        i = 0;
+                        while(i<subscriptIdentifiers.Count)
+                        {
+                            currentEnvironment.addNewItem(subscriptIdentifiers[i], subscriptData[i]);
                             i++;
                         }
 
@@ -6104,6 +6174,28 @@ namespace HighCInterpreterCore
             return false;
         }
 
+        private Boolean HC_object_expression(out HighCData value)
+        {
+            if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_object_expression"); }
+            int storeToken = currentToken;
+            value = null;
+            /*
+            <object – constant>
+            <object – variable>
+            <object – func call>
+            { <field – assign list> }
+             */
+
+            if(HC_object_constant(out value))
+            {
+                Console.WriteLine(currentToken + " <object expression> -> <object constant>" + value);
+                return true;
+            }
+
+
+            return false;
+        }
+
         private Boolean HC_option(out String option)
         {
             if (fullDebug == true) { Console.WriteLine("Attempting: " + "HC_option"); }
@@ -7805,7 +7897,67 @@ namespace HighCInterpreterCore
                 }
                 else if (temp.isArray())
                 {
+                    storeToken = currentToken;
+                    int intBuffer;
+                    List<int> index = new List<int>();
+                    if(HC_subscript_expression(out intBuffer))
+                    {
+                        storeToken = currentToken;
+                        index.Add(intBuffer - 1);
+                        while (HC_subscript_expression(out intBuffer))
+                        {
+                            storeToken = currentToken;
+                            index.Add(intBuffer - 1);
+                        }
+                        currentToken = storeToken;
+                        
+                        if (index.Count > 0 || errorFound)
+                        {
+                            if (((HighCArray)(temp.data)).indexInBounds(index))
+                            {
+                                storeToken = currentToken;
+                                if (matchTerminal(HighCTokenLibrary.PERIOD))//Indirection
+                                {
+                                    HighCClass classInstance = (HighCClass)(((HighCArray)(temp.data)).getItemAt(index).data);
+                                    String fieldID;
+                                    if (HC_id(out fieldID) == false)
+                                    {
+                                        error("Class Variable: Expected a field identifier after the period.");
+                                        return false;
+                                    }
 
+                                    if (classInstance.publicEnvironment.directlyContains(fieldID) == false)
+                                    {
+                                        error("Class Variable: The field identifier \"" + fieldID + "\" could not be found in class \"" + identifier + "\".");
+                                        return false;
+                                    }
+
+                                    storeToken = currentToken;
+                                    temp = classInstance.publicEnvironment.getItem(fieldID);
+                                    Console.WriteLine(currentToken + " <variable> -> <object - variable><subscript>*.<variable> -> " + identifier + "." + fieldID);
+                                }
+                                else //Return Class[Subscript]*
+                                {
+                                    currentToken = storeToken;
+                                    value = ((HighCArray)(temp.data)).getItemAt(index);
+                                    Console.WriteLine(currentToken + " <variable> -> <object - variable><subscript>* -> " + identifier + value);
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                error("Array Variable: The specified array index goes outside the bounds of the array.");
+                                return false;
+                            }
+                        }
+                    }
+                    else //Return Class Array
+                    {
+                        currentToken = storeToken;
+                        value = temp;
+                        Console.WriteLine(currentToken + " <variable> -> <object - variable> -> " + identifier + value);
+                        return true;
+                    }
                 }
             }
 
@@ -7961,7 +8113,7 @@ namespace HighCInterpreterCore
         
         private Boolean HC_field_assign() { return false; }
         private Boolean HC_input() { /*Ensure Purity Check*/return false; }
-        private Boolean HC_object_expression(out HighCData value) { value = null; return false; }
+        
         private Boolean HC_prompt_variable() { return false; }
         /*Generic Type Functions - Currently Unimplemented
         private Boolean HC_type_assignment() { return false; }
@@ -8041,6 +8193,8 @@ namespace HighCInterpreterCore
             }
             return true;
         }
+
+
     }
 
     public class HighCClass
@@ -9423,7 +9577,7 @@ namespace HighCInterpreterCore
         public Boolean inAllowed;
         public Boolean outAllowed;
         public HighCType type;
-        List<String> subscriptParameters;
+        public List<String> subscriptParameters;
 
         public HighCParameter(
             String name, 
