@@ -41,15 +41,23 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
-            //Default
+            
             textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
                 "//User Constants" + Environment.NewLine +
                 "//Global Variables" + Environment.NewLine +
                 "//Classes" + Environment.NewLine +
-                "class testClass" + Environment.NewLine +
+                "class testClass3" + Environment.NewLine +
                 "private {}" + Environment.NewLine +
                 "public {create INT num}" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "class testClass2" + Environment.NewLine +
+                "private {}" + Environment.NewLine +
+                "public {create testClass3 listObject@}" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "class testClass" + Environment.NewLine +
+                "private {}" + Environment.NewLine +
+                "public {create testClass2 obj}" + Environment.NewLine +
                 "//Functions" + Environment.NewLine +
                 "//Main" + Environment.NewLine +
                 Environment.NewLine +
