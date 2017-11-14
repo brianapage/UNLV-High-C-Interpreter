@@ -195,7 +195,7 @@ namespace HighCInterpreterCore
 
             return false;
         }
-
+        
         private void error(String errorMessage = "")
         {
             if (errorMessage != "")
@@ -204,7 +204,10 @@ namespace HighCInterpreterCore
             }
             else
             {
-                Console.WriteLine("Empty Error Added: " + tokenList[currentToken]);
+                if(currentToken < tokenList.Count)
+                {
+                    Console.WriteLine("Empty Error Added: " + tokenList[currentToken]);
+                }
             }
             stopProgram = true;
             errorFound = true;
@@ -1034,102 +1037,109 @@ namespace HighCInterpreterCore
             set <variable> = <expr>
              */
 
-            if (matchTerminal(HighCTokenLibrary.SET))
+            if (matchTerminal(HighCTokenLibrary.SET)==false)
             {
-                if (HC_id(out identifier))
+                return false;
+            }
+
+            if (HC_id(out identifier)==false)
+            {
+                error(HighCTokenLibrary.SET + ": An identifier name was expected.");
+                return false;
+            }
+
+            if (pureStatus == true)
+            {
+                HighCData globalItem = globalEnvironment.getItem(identifier);
+                HighCData localItem = currentEnvironment.getItem(identifier);
+                if (globalItem == localItem &&
+                    localItem != null)
                 {
-                    if (pureStatus == true)
+                    error(HighCTokenLibrary.SET + ": Global scope data cannot be altered by a pure function.");
+                    return false;
+                }
+            }
+
+            List<int> dimensions = new List<int>();
+            if (currentEnvironment.contains(identifier))
+            {
+                //Check for sliced list
+                firstItem = currentEnvironment.getItem(identifier);
+                //Checking for List Slices
+                storeToken = currentToken;
+                if (firstItem.isList())
+                {
+                    if (matchTerminal(HighCTokenLibrary.AT_SIGN))
                     {
-                        HighCData globalItem = globalEnvironment.getItem(identifier);
-                        HighCData localItem = currentEnvironment.getItem(identifier);
-                        if (globalItem == localItem &&
-                            localItem != null)
+                        if(matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET,true)==false)
                         {
-                            error(HighCTokenLibrary.SET + ": Global scope data cannot be altered by a pure function.");
+                            error();
+                            return false;
+                        }
+                        if (HC_slice(out index, out length))
+                        {
+                            isListSlice = true;
+                            if (firstItem.getCount() == 0)
+                            {
+                                error("List Variable: Empty lists cannot be accessed in this way.");
+                                return false;
+                            }
+                            else if (index + length - 1 > firstItem.getCount())
+                            {
+                                error("List Variable: The specified slice must be between 1 and " + firstItem.getCount() + ".");
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            error();
+                            return false;
+                        }
+                        if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
+                        {
+                            error();
                             return false;
                         }
                     }
-
-                    List<int> dimensions = new List<int>();
-                    if (currentEnvironment.contains(identifier))
+                    else
                     {
-                        //Check for sliced list
-                        firstItem = currentEnvironment.getItem(identifier);
-                        //Checking for List Slices
+                        currentToken = storeToken;
+                    }
+                }
+                //Checking for Array Subscripts and/or a Slice
+                else if (firstItem.isArray())
+                {
+                    int nextSubscript = 0;
+                    while (HC_subscript_expression(out nextSubscript))
+                    {
                         storeToken = currentToken;
-                        if (firstItem.isList())
+                        dimensions.Add(nextSubscript);
+                    }
+                    currentToken = storeToken;
+
+                    if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET))
+                    {
+                        if (HC_slice(out arraySliceIndex, out arraySliceLength))
                         {
-                            if (matchTerminal(HighCTokenLibrary.AT_SIGN))
+                            storeToken = currentToken;
+                            if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
                             {
-                                if (HC_slice(out index, out length))
-                                {
-                                    isListSlice = true;
-                                    if (firstItem.getCount() == 0)
-                                    {
-                                        error("List Variable: Empty lists cannot be accessed in this way.");
-                                        return false;
-                                    }
-                                    else if (index + length - 1 > firstItem.getCount())
-                                    {
-                                        error("List Variable: The specified slice must be between 1 and " + firstItem.getCount() + ".");
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    error();
-                                    return false;
-                                }
-                            }
-                            else
-                            {
-                                currentToken = storeToken;
+                                error();
+                                return false;
                             }
                         }
-                        //Checking for Array Subscripts and/or a Slice
-                        else if (firstItem.isArray())
+                        else
                         {
-                            int nextSubscript = 0;
-                            while (HC_subscript(out nextSubscript))
-                            {
-                                storeToken = currentToken;
-                                dimensions.Add(nextSubscript);
-                            }
-                            currentToken = storeToken;
-
-                            if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET))
-                            {
-                                if (HC_slice(out arraySliceIndex, out arraySliceLength))
-                                {
-                                    storeToken = currentToken;
-                                    if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
-                                    {
-                                        error();
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    error();
-                                    return false;
-                                }
-                            }
-                            else
-                            {
-                                currentToken = storeToken;
-                                //If no slice was found but there were subscripts, it transforms
-                                //the last subscript into a slice of length 1.
-                                /*
-                                if (dimensions.Count > 0)
-                                {
-                                    arraySliceIndex = dimensions.Last();
-                                    arraySliceLength = 1;
-                                    dimensions.RemoveAt(dimensions.Count - 1);
-                                }
-                                */
-                            }
+                            error();
+                            return false;
                         }
                     }
+                    else
+                    {
+                        currentToken = storeToken;
+                    }
+                }
+            }
 
                     if (matchTerminal(HighCTokenLibrary.EQUAL, true))
                     {
@@ -1404,13 +1414,6 @@ namespace HighCInterpreterCore
                             error(HighCTokenLibrary.SET + ": An expression was expected after the equal sign.");
                         }
                     }
-                }
-                else
-                {
-                    error(HighCTokenLibrary.SET + ": An identifier name was expected.");
-                }
-            }
-
             return false;
         }
 
@@ -1873,6 +1876,12 @@ namespace HighCInterpreterCore
                 return false;
             }
 
+            if(dataBuffer.isArray() ||
+                dataBuffer.isList())
+            {
+                return false;
+            }
+
             Console.WriteLine(currentToken + " <boolean variable> -> <variable> -> " + value);
             value = (Boolean)dataBuffer.data;
             return true;
@@ -2056,6 +2065,12 @@ namespace HighCInterpreterCore
             }
 
             if (dataBuffer.isCharacter() == false)
+            {
+                return false;
+            }
+            
+            if (dataBuffer.isArray() ||
+                dataBuffer.isList())
             {
                 return false;
             }
@@ -2289,7 +2304,7 @@ namespace HighCInterpreterCore
             //<qualifier> class <id> <type parameters> <parent> <body>
 
             if (HC_qualifier(out qualifier)) { } //should always be true
-
+            
             if (matchTerminal(HighCTokenLibrary.CLASS) == false)
             {
                 if (qualifier != "")
@@ -3427,6 +3442,12 @@ namespace HighCInterpreterCore
                 return false;
             }
 
+            if (dataBuffer.isArray() ||
+                dataBuffer.isList())
+            {
+                return false;
+            }
+
             Console.WriteLine(currentToken + " <enum variable> -> <variable> -> " + value);
             value = (HighCEnumeration)dataBuffer.data;
             return true;
@@ -3619,6 +3640,12 @@ namespace HighCInterpreterCore
             }
 
             if (dataBuffer.isFloat() == false)
+            {
+                return false;
+            }
+
+            if (dataBuffer.isArray() ||
+                dataBuffer.isList())
             {
                 return false;
             }
@@ -4033,9 +4060,9 @@ namespace HighCInterpreterCore
                         returnValue = null;
                         returnFlag = false;
 
+                        i = 0;
                         foreach (HighCParameter parameter in parameters)
                         {
-                            i = 0;
                             if (parameter.outAllowed == true)
                             {
                                 HighCData temp;
@@ -4780,6 +4807,12 @@ namespace HighCInterpreterCore
                 return false;
             }
 
+            if (dataBuffer.isArray() ||
+                dataBuffer.isList())
+            {
+                return false;
+            }
+
             Console.WriteLine(currentToken + " <integer variable> -> <variable> -> " + value);
             value = (Int64)dataBuffer.data;
             return true;
@@ -5507,7 +5540,7 @@ namespace HighCInterpreterCore
                 }
             }
 
-            //insert < list – id > @ < int – expr > = < element or list>
+            //insert < list – id > @ [ < int – expr > ] = < element or list>
             currentToken = storeToken;
             if (matchTerminal(HighCTokenLibrary.INSERT))
             {
@@ -5530,10 +5563,22 @@ namespace HighCInterpreterCore
                             return false;
                         }
 
+                        if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET, true) == false)
+                        {
+                            error();
+                            return false;
+                        }
+
                         Int64 intBuffer;
                         if (HC_integer_expression(out intBuffer) == false)
                         {
                             error(HighCTokenLibrary.INSERT + ": Expected an integer value to specify the list position to insert after.");
+                            return false;
+                        }
+
+                        if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
+                        {
+                            error();
                             return false;
                         }
 
@@ -5636,6 +5681,12 @@ namespace HighCInterpreterCore
                             return false;
                         }
 
+                        if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET, true) == false)
+                        {
+                            error();
+                            return false;
+                        }
+
                         int startingPosition;
                         int length;
                         if (HC_slice(out startingPosition, out length))
@@ -5655,6 +5706,13 @@ namespace HighCInterpreterCore
                                 error(HighCTokenLibrary.REMOVE + ": The second index must be less than " + list.getCount() + ".");
                                 return false;
                             }
+
+                            if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
+                            {
+                                error();
+                                return false;
+                            }
+
                             ((List<HighCData>)(list.data)).RemoveRange(startingPosition - 1, length);
                             Console.WriteLine(currentToken + " <list command> -> remove <list – id> @ <slice> -> " + list);
                             return true;
@@ -5947,6 +6005,12 @@ namespace HighCInterpreterCore
                     }
                     currentToken = storeToken;
 
+                    if(matchTerminal(HighCTokenLibrary.RIGHT_CURLY_BRACKET)==false)
+                    {
+                        error("Loop: Invalid statement found before end of loop.");
+                        return false;
+                    }
+
                     currentToken = loopStartToken;
                 }
 
@@ -6233,7 +6297,7 @@ namespace HighCInterpreterCore
             <arith – expr> : <int – expr>.<int - expr>
             endl
              */
-
+            
             //Ensures Minimum Length
             if (HC_scalar_expression(out value))
             {
@@ -6288,6 +6352,18 @@ namespace HighCInterpreterCore
             currentToken = storeToken;
             if (HC_expression(out value))
             {
+                if(value.isList())
+                {
+                    error("Out Element: Lists cannot be output directly by the \""+HighCTokenLibrary.OUT+ "\" statement.");
+                    return false;
+                }
+
+                if (value.isArray())
+                {
+                    error("Out Element: Arrays cannot be output directly by the \"" + HighCTokenLibrary.OUT + "\" statement.");
+                    return false;
+                }
+
                 if (value.isBoolean())
                 {
                     stringBuffer = value.data.ToString();
@@ -7342,6 +7418,12 @@ namespace HighCInterpreterCore
                 return false;
             }
 
+            if (dataBuffer.isArray() ||
+                dataBuffer.isList())
+            {
+                return false;
+            }
+
             Console.WriteLine(currentToken + " <string variable> -> <variable> -> " + value);
             value = (String)dataBuffer.data;
             return true;
@@ -7400,7 +7482,7 @@ namespace HighCInterpreterCore
                         error("Subscript: The value must be greater than 0.");
                         return false;
                     }
-
+                    
                     if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true))
                     {
                         value = (int)intBuffer;
@@ -7836,10 +7918,22 @@ namespace HighCInterpreterCore
                     currentToken = storeToken;
                     if (matchTerminal(HighCTokenLibrary.AT_SIGN)) //Return Slice
                     {
+                        if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET, true) == false)
+                        {
+                            error();
+                            return false;
+                        }
+
                         int index;
                         int length;
                         if (HC_slice(out index, out length))
                         {
+                            if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
+                            {
+                                error();
+                                return false;
+                            }
+
                             if (length != 1)
                             {
                                 error("List Variable: The length of the slice from the list must be 1.");
@@ -7851,7 +7945,7 @@ namespace HighCInterpreterCore
                                 error("List Variable: The specified slice goes outside the bounds of the list.");
                                 return false;
                             }
-
+                            
                             storeToken = currentToken;
                             if(matchTerminal(HighCTokenLibrary.PERIOD))//Indirection
                             {
@@ -7886,6 +7980,7 @@ namespace HighCInterpreterCore
                             error();
                             return false;
                         }
+
                     }
                     else //Return Class List
                     {
@@ -8003,17 +8098,29 @@ namespace HighCInterpreterCore
                 storeToken = currentToken;
                 if (matchTerminal(HighCTokenLibrary.AT_SIGN))
                 {
+                    if (matchTerminal(HighCTokenLibrary.LEFT_SQUARE_BRACKET, true) == false)
+                    {
+                        error();
+                        return false;
+                    }
+
                     int index;
                     int length;
                     if (HC_slice(out index, out length))
                     {
+                        if (matchTerminal(HighCTokenLibrary.RIGHT_SQUARE_BRACKET, true) == false)
+                        {
+                            error();
+                            return false;
+                        }
+
                         if (length != 1)
                         {
                             error("List Variable: The length of the slice from the list must be 1.");
                             return false;
                         }
-
-                        if (index + length - 1 > temp.getCount())
+                        
+                        if (index + length - 1 > temp.getCount() || index == 0)
                         {
                             error("List Variable: The specified slice goes outside the bounds of the list.");
                             return false;
