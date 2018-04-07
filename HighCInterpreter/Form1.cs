@@ -9,13 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HighCInterpreterCore;
 
-/*
- * To Do:
- * Rounding
- * Non-Recursive Tracking
- * Function Declaration
- */
-
 namespace HighCInterpreterCore
 {
     public partial class Form1 : Form
@@ -41,7 +34,30 @@ namespace HighCInterpreterCore
                 "" + Environment.NewLine +
                 "}";
 
-            
+            //*Empty
+            textbox_InputBox.Text = "";
+            //*/
+
+            /*Function Array Parameter Testing
+            textbox_InputBox.Text =
+                "//Compiler Directives" + Environment.NewLine +
+                "//User Constants" + Environment.NewLine +
+                "//Global Variables" + Environment.NewLine +
+                "//Classes" + Environment.NewLine +
+                "//Functions" + Environment.NewLine +
+                "func testFunction (in INT array1[x1], out INT array2[x2][y2], inout INT array3[x3]) => void" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "}" + Environment.NewLine +
+            "//Main" + Environment.NewLine +
+                Environment.NewLine +
+                "main" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "}";
+            //*/
+
+            /*Class Testing
             textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
                 "//User Constants" + Environment.NewLine +
@@ -71,8 +87,9 @@ namespace HighCInterpreterCore
                 "}";
             //*/
 
-            
-            /*textbox_InputBox.Text =
+
+            /*
+            textbox_InputBox.Text =
                 "//Compiler Directives" + Environment.NewLine +
                 "//User Constants" + Environment.NewLine + 
                 "enum weekdays = {Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}" + Environment.NewLine +
@@ -352,6 +369,7 @@ namespace HighCInterpreterCore
                 "   }" + Environment.NewLine +
                 "}";
                 //*/
+            update_cursor_position();
         }
 
         private void Form1_Load(object sender, EventArgs e) { }
@@ -399,6 +417,59 @@ namespace HighCInterpreterCore
                 textbox_BuildBox.Text += "Parser has encountered an error:" + Environment.NewLine + parser.getDebugLog();
             }
         }
-        
+
+        private void textbox_InputBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            update_cursor_position();
+        }
+
+        private void update_cursor_position()
+        {
+            int caretPosition = textbox_InputBox.SelectionStart;
+            int lines = 1;
+            int columns = 1;
+            int i = 0;
+            while (i < caretPosition)
+            {
+                if (textbox_InputBox.Text[i] == '\n')
+                {
+                    lines++;
+                }
+                i++;
+            }
+
+            i = caretPosition-1;
+            while(i>=0 && i < textbox_InputBox.TextLength)
+            {
+                if(textbox_InputBox.Text[i] == '\n')
+                {
+                    break;
+                }
+                columns++;
+                i--;
+            }
+            cursorPosition.Text = "Line: " + lines.ToString()+" Column: "+columns;
+        }
+
+        private void textbox_InputBox_Click(object sender, EventArgs e)
+        {
+            update_cursor_position();
+        }
+
+        private void textbox_InputBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            update_cursor_position();
+        }
+
+        private void textbox_InputBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+
+            update_cursor_position();
+        }
+
+        private void textbox_InputBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            update_cursor_position();
+        }
     }
 }

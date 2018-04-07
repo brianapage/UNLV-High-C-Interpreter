@@ -62,15 +62,17 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.cursorPosition = new System.Windows.Forms.ToolStripLabel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.Tabs = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabSource = new System.Windows.Forms.TabPage();
             this.textbox_InputBox = new System.Windows.Forms.TextBox();
             this.Tabs_Output = new System.Windows.Forms.TabControl();
             this.tabOutput = new System.Windows.Forms.TabPage();
             this.textbox_OutputBox = new System.Windows.Forms.TextBox();
             this.tabBuild = new System.Windows.Forms.TabPage();
             this.textbox_BuildBox = new System.Windows.Forms.TextBox();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -78,7 +80,7 @@
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.Tabs.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.tabSource.SuspendLayout();
             this.Tabs_Output.SuspendLayout();
             this.tabOutput.SuspendLayout();
             this.tabBuild.SuspendLayout();
@@ -86,6 +88,7 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.Enabled = false;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem1,
             this.editToolStripMenuItem,
@@ -330,7 +333,9 @@
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton1});
+            this.toolStripButton1,
+            this.toolStripSeparator1,
+            this.cursorPosition});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(738, 25);
@@ -339,11 +344,18 @@
             // 
             // toolStripButton1
             // 
+            this.toolStripButton1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(32, 22);
-            this.toolStripButton1.Text = "Run";
+            this.toolStripButton1.Size = new System.Drawing.Size(87, 22);
+            this.toolStripButton1.Text = "Execute Code";
             this.toolStripButton1.Click += new System.EventHandler(this.button_Tokenize_click);
+            // 
+            // cursorPosition
+            // 
+            this.cursorPosition.Name = "cursorPosition";
+            this.cursorPosition.Size = new System.Drawing.Size(86, 22);
+            this.cursorPosition.Text = "toolStripLabel1";
             // 
             // splitContainer1
             // 
@@ -367,7 +379,7 @@
             // 
             // Tabs
             // 
-            this.Tabs.Controls.Add(this.tabPage1);
+            this.Tabs.Controls.Add(this.tabSource);
             this.Tabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Tabs.Location = new System.Drawing.Point(0, 0);
             this.Tabs.Name = "Tabs";
@@ -376,22 +388,29 @@
             this.Tabs.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
             this.Tabs.TabIndex = 6;
             // 
-            // tabPage1
+            // tabSource
             // 
-            this.tabPage1.Controls.Add(this.textbox_InputBox);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(381, 317);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Source Code";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabSource.Controls.Add(this.textbox_InputBox);
+            this.tabSource.Location = new System.Drawing.Point(4, 22);
+            this.tabSource.Name = "tabSource";
+            this.tabSource.Padding = new System.Windows.Forms.Padding(3);
+            this.tabSource.Size = new System.Drawing.Size(381, 317);
+            this.tabSource.TabIndex = 1;
+            this.tabSource.Text = "Code";
+            this.tabSource.UseVisualStyleBackColor = true;
             // 
             // textbox_InputBox
             // 
             this.textbox_InputBox.AcceptsReturn = true;
             this.textbox_InputBox.AcceptsTab = true;
             this.textbox_InputBox.AllowDrop = true;
+            this.textbox_InputBox.AutoCompleteCustomSource.AddRange(new string[] {
+            "main",
+            "create",
+            "set",
+            "append"});
+            this.textbox_InputBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.textbox_InputBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.textbox_InputBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textbox_InputBox.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textbox_InputBox.Location = new System.Drawing.Point(3, 3);
@@ -402,6 +421,11 @@
             this.textbox_InputBox.Size = new System.Drawing.Size(375, 311);
             this.textbox_InputBox.TabIndex = 0;
             this.textbox_InputBox.WordWrap = false;
+            this.textbox_InputBox.Click += new System.EventHandler(this.textbox_InputBox_Click);
+            this.textbox_InputBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textbox_InputBox_KeyDown);
+            this.textbox_InputBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textbox_InputBox_KeyPress);
+            this.textbox_InputBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textbox_InputBox_KeyUp);
+            this.textbox_InputBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.textbox_InputBox_MouseMove);
             // 
             // Tabs_Output
             // 
@@ -461,6 +485,11 @@
             this.textbox_BuildBox.TabIndex = 2;
             this.textbox_BuildBox.WordWrap = false;
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -471,7 +500,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
-            this.Text = "High-C Interpreter";
+            this.Text = "C-Minor Interpreter";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -482,8 +511,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.Tabs.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
+            this.tabSource.ResumeLayout(false);
+            this.tabSource.PerformLayout();
             this.Tabs_Output.ResumeLayout(false);
             this.tabOutput.ResumeLayout(false);
             this.tabOutput.PerformLayout();
@@ -529,14 +558,16 @@
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.TabControl Tabs;
-        private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TextBox textbox_InputBox;
         private System.Windows.Forms.TabControl Tabs_Output;
         private System.Windows.Forms.TabPage tabOutput;
         private System.Windows.Forms.TextBox textbox_OutputBox;
         private System.Windows.Forms.TabPage tabBuild;
         private System.Windows.Forms.TextBox textbox_BuildBox;
+        private System.Windows.Forms.ToolStripLabel cursorPosition;
+        private System.Windows.Forms.TabControl Tabs;
+        private System.Windows.Forms.TabPage tabSource;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     }
 }
 

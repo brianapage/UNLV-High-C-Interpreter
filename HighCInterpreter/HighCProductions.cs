@@ -58,21 +58,20 @@ namespace HighCInterpreterCore
 
         private void addDebugInfo(String newEntry, Boolean addTokenPosition = true)
         {
-            if (currentToken - 1 < tokenList.Count)
-            {
-                if (addTokenPosition == true)
-                {
-                    newEntry = "(L" + tokenList[currentToken - 1].Line + ", C" + tokenList[currentToken - 1].Column + "): " + newEntry + Environment.NewLine;
-                }
-
-                if (debugList.Contains(newEntry) == false)
-                {
-                    debugList.Add(newEntry);
-                }
-            }
-            else
+            if (currentToken - 1 >= tokenList.Count)
             {
                 Console.WriteLine("Error: Token out of range.");
+                return;
+            }
+
+            if (addTokenPosition == true)
+            {
+                newEntry = "(L" + tokenList[currentToken - 1].Line + ", C" + tokenList[currentToken - 1].Column + "): " + newEntry + Environment.NewLine;
+            }
+
+            if (debugList.Contains(newEntry) == false)
+            {
+                debugList.Add(newEntry);
             }
         }
 
@@ -105,37 +104,39 @@ namespace HighCInterpreterCore
             int storeToken = currentToken;
             int bracketsToMatch;
 
-            if (tokenList[storeToken].Type == HighCTokenLibrary.LEFT_CURLY_BRACKET)
-            {
-                Console.WriteLine("Skipping Block...");
-                Console.WriteLine("Skipping: " + tokenList[storeToken].Text);
-                bracketsToMatch = 1;
-                storeToken++;
-                while (storeToken < tokenList.Count && bracketsToMatch > 0)
-                {
-                    Console.WriteLine("Skipping: " + tokenList[storeToken].Text);
-                    if (tokenList[storeToken].Type == HighCTokenLibrary.LEFT_CURLY_BRACKET)
-                    {
-                        bracketsToMatch++;
-                    }
-                    else if (tokenList[storeToken].Type == HighCTokenLibrary.RIGHT_CURLY_BRACKET)
-                    {
-                        bracketsToMatch--;
-                    }
-
-                    storeToken++;
-                }
-
-                if (bracketsToMatch == 0)
-                {
-                    currentToken = storeToken;
-                    return true;
-                }
-            }
-            else
+            if (tokenList[storeToken].Type != HighCTokenLibrary.LEFT_CURLY_BRACKET)
             {
                 Console.WriteLine("Error: Block not found.");
+                return false;
             }
+
+            if (fullDebug == true) Console.WriteLine("Skipping Block...");
+            if (fullDebug == true) Console.WriteLine("Skipping: " + tokenList[storeToken].Text);
+
+            bracketsToMatch = 1;
+            storeToken++;
+            while (storeToken < tokenList.Count && bracketsToMatch > 0)
+            {
+                if(fullDebug == true) Console.WriteLine("Skipping: " + tokenList[storeToken].Text);
+
+                if (tokenList[storeToken].Type == HighCTokenLibrary.LEFT_CURLY_BRACKET)
+                {
+                    bracketsToMatch++;
+                }
+                else if (tokenList[storeToken].Type == HighCTokenLibrary.RIGHT_CURLY_BRACKET)
+                {
+                    bracketsToMatch--;
+                }
+
+                storeToken++;
+            }
+
+            if (bracketsToMatch == 0)
+            {
+                currentToken = storeToken;
+                return true;
+            }
+
             return false;
         }
 
@@ -3667,23 +3668,54 @@ namespace HighCInterpreterCore
 
             HighCParameter currentParameter;
             parameters = new List<HighCParameter>();
+            List<String> usedIdentifiers = new List<String>();
 
             if (HC_parameter(out currentParameter))
             {
                 parameters.Add(currentParameter);
+                usedIdentifiers.Add(currentParameter.identifier);
+
+                foreach (String subscriptID in currentParameter.subscriptParameters)
+                {
+                    if (usedIdentifiers.Contains(subscriptID))
+                    {
+                        error("Function/Method Declaration: The identifer \"" + subscriptID + "\" has already been declared in this definition.");
+                        return false;
+                    }
+
+                    usedIdentifiers.Add(subscriptID);
+                }
+
                 storeToken = currentToken;
                 while (matchTerminal(HighCTokenLibrary.COMMA))
                 {
-                    if (HC_parameter(out currentParameter))
-                    {
-                        parameters.Add(currentParameter);
-                        storeToken = currentToken;
-                    }
-                    else
+                    if (HC_parameter(out currentParameter) == false)
                     {
                         error("Function/Method Declaration: Another parameter was expected after the comma.");
                         return false;
                     }
+                        
+                    //Check for duplicate parameters/subscript identifiers
+                    if(usedIdentifiers.Contains(currentParameter.identifier))
+                    {
+                        error("Function/Method Declaration: The identifer \"" + currentParameter.identifier + "\" has already been declared in this definition.");
+                        return false;
+                    }
+                    usedIdentifiers.Add(currentParameter.identifier);
+
+                    foreach (String subscriptID in currentParameter.subscriptParameters)
+                    {
+                        if(usedIdentifiers.Contains(subscriptID))
+                        {
+                            error("Function/Method Declaration: The identifer \"" + subscriptID + "\" has already been declared in this definition.");
+                            return false;
+                        }
+
+                        usedIdentifiers.Add(subscriptID);
+                    }
+                    
+                    parameters.Add(currentParameter);
+                    storeToken = currentToken;
                 }
 
                 currentToken = storeToken;
@@ -6449,58 +6481,57 @@ namespace HighCInterpreterCore
             HighCType type = null;
             Boolean inAllowed;
             Boolean outAllowed;
-            List<String> parameterIDList = new List<String>();
+            Boolean directionFound = false;
+            List<String> parameterSubscriptList = new List<String>();
             parameter = null;
 
-            if (HC_direction(out inAllowed, out outAllowed))
+            //Always returns true
+            HC_direction(out inAllowed, out outAllowed);
+            if(storeToken!=currentToken)
             {
-                if (HC_type(out type))
-                {
-                    if (HC_id(out id))
-                    {
-                        storeToken = currentToken;
-                        if (matchTerminal(HighCTokenLibrary.AT_SIGN))
-                        {
-                            type.memoryType = HighCType.LIST_SUBTYPE;
-                            parameter = new HighCParameter(id, type, inAllowed, outAllowed, parameterIDList);
-                            Console.WriteLine(currentToken + " <parameter> -> <direction><type><id>@ ->" + parameter);
-                            return true;
-                        }
-
-                        currentToken = storeToken;
-
-                        String currentID;
-                        while (HC_subscript_parameter(out currentID))
-                        {
-                            type.memoryType = HighCType.ARRAY_SUBTYPE;
-                            storeToken = currentToken;
-                            parameterIDList.Add(currentID);
-                            Console.WriteLine(currentToken + " <parameter> -> <direction><type><id><subscript parameter>* ->" + parameter);
-                        }
-
-                        currentToken = storeToken;
-
-                        parameter = new HighCParameter(id, type, inAllowed, outAllowed, parameterIDList);
-                        Console.WriteLine(currentToken + " <parameter> -> <direction><type><id> ->" + parameter);
-                        return true;
-                    }
-                    else
-                    {
-                        //error
-                        return false;
-                    }
-                }
-                else
-                {
-                    //error
-                    return false;
-                }
+                directionFound = true;
             }
-            else
+
+            if (HC_type(out type) == false)
             {
-                //error
+                if(directionFound==true)
+                {
+                    error("Function Parameter: Expected a type after the in/out specifier.");
+                }
                 return false;
             }
+
+            if (HC_id(out id) == false)
+            {
+                error("Function Parameter: Expected an identifier after the type.");
+                return false;
+            }
+
+            //List Parameter
+            storeToken = currentToken;
+            if (matchTerminal(HighCTokenLibrary.AT_SIGN))
+            {
+                type.memoryType = HighCType.LIST_SUBTYPE;
+                parameter = new HighCParameter(id, type, inAllowed, outAllowed, parameterSubscriptList);
+                Console.WriteLine(currentToken + " <parameter> -> <direction><type><id>@ ->" + parameter);
+                return true;
+            }
+
+            //Array Parameter
+            currentToken = storeToken;
+            String currentID;
+            while (HC_subscript_parameter(out currentID))
+            {
+                storeToken = currentToken;
+                type.memoryType = HighCType.ARRAY_SUBTYPE;
+                parameterSubscriptList.Add(currentID);
+                Console.WriteLine(currentToken + " <parameter> -> <direction><type><id><subscript parameter>* ->" + parameter);
+            }
+            currentToken = storeToken;
+
+            parameter = new HighCParameter(id, type, inAllowed, outAllowed, parameterSubscriptList);
+            Console.WriteLine(currentToken + " <parameter> -> <direction><type><id> ->" + parameter);
+            return true;
         }
 
         private Boolean HC_parent(out String parentName)
